@@ -1,5 +1,5 @@
 import pino from 'pino';
-import { isDev } from './env.js';
+import { isDev } from './env.ts';
 
 export const logger = pino({
   level: process.env.LOG_LEVEL || (isDev ? 'debug' : 'info'),

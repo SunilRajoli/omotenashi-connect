@@ -1,4 +1,5 @@
-import express, { Application, Request, Response, NextFunction } from 'express';
+import express from 'express';
+import type { Application, Request, Response, NextFunction } from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import path from 'path';
@@ -6,8 +7,10 @@ import fs from 'fs';
 import swaggerUi from 'swagger-ui-express';
 import YAML from 'yaml';
 
-import { env } from './config/env.js';
-import { logger } from './config/logger.js';
+import { env } from './config/env.ts';
+import { logger } from './config/logger.ts';
+
+import authRoutes from './modules/auth/auth.routes.ts';
 
 /** Simple request ID (can swap for @fastify/request-id or uuid later) */
 function requestId(req: Request, _res: Response, next: NextFunction) {
@@ -65,7 +68,7 @@ function swagger(app: Application) {
 function mountRoutes(app: Application) {
   // Example placeholder route
   app.get('/api/v1/ping', (_req, res) => res.json({ pong: true }));
-  // TODO: app.use('/api/v1/auth', authRoutes);
+  app.use('/api/v1/auth', authRoutes);
   // TODO: app.use('/api/v1/businesses', businessRoutes);
   // TODO: app.use('/api/v1/services', serviceRoutes);
   // TODO: app.use('/api/v1/staff', staffRoutes);

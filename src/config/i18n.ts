@@ -1,5 +1,5 @@
 import i18next from 'i18next';
-import { env } from './env.js';
+import { env } from './env.ts';
 
 export async function initI18n() {
   await i18next.init({

@@ -1,0 +1,25 @@
+version: "3.9"
+services:
+  api:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.api
+    env_file: ../.env
+    command: node dist/server.js
+    ports: ["4000:4000"]
+    depends_on: [db, redis]
+  worker:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.worker
+    env_file: ../.env
+    command: node dist/worker.js
+    depends_on: [db, redis]
+  db:
+    image: postgis/postgis:15-3.4
+    environment:
+      POSTGRES_DB: omotenashi
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+  redis:
+    image: redis:7

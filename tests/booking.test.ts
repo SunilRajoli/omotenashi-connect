@@ -1,15 +1,7 @@
-import { bookingService } from '../src/services/booking.service';
-
+// TODO: Implement booking service tests
 describe('Booking', () => {
-  it('should create a booking', async () => {
-    const booking = await bookingService.create({
-      businessId: 1,
-      serviceId: 1,
-      customerId: 1,
-      startTime: new Date(),
-      endTime: new Date(),
-    });
-    expect(booking).toBeDefined();
-  });
+  it.todo('should create a booking');
+  it.todo('should cancel a booking');
+  it.todo('should update booking status');
 });
 

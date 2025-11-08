@@ -59,6 +59,7 @@ interface RefreshPayload extends JwtPayload {
   email: string;
   role: UserRole;
   type: 'refresh';
+  jti?: string; // JWT ID for token rotation
 }
 
 /**
@@ -97,6 +98,7 @@ function generateRefreshToken(
     email,
     role,
     type: 'refresh',
+    jti: generateToken(16), // Unique token ID to ensure rotation
   };
   const options: SignOptions = {
     expiresIn: env.JWT_REFRESH_EXPIRES as unknown as SignOptions['expiresIn'],

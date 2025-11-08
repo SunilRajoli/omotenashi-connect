@@ -1,0 +1,9 @@
+paths:
+  /api/bookings:
+    post:
+      summary: Create booking
+      tags: [Bookings]
+      responses:
+        '201':
+          description: Booking created
+

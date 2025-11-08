@@ -1,0 +1,17 @@
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+    Business:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+

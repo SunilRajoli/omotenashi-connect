@@ -1,0 +1,9 @@
+paths:
+  /api/admin/feature-flags:
+    get:
+      summary: List feature flags
+      tags: [Admin]
+      responses:
+        '200':
+          description: List of feature flags
+

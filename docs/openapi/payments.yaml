@@ -1,0 +1,9 @@
+paths:
+  /api/payments:
+    post:
+      summary: Process payment
+      tags: [Payments]
+      responses:
+        '200':
+          description: Payment processed
+

@@ -1,0 +1,9 @@
+paths:
+  /api/availability:
+    get:
+      summary: Check availability
+      tags: [Availability]
+      responses:
+        '200':
+          description: Availability information
+

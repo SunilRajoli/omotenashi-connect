@@ -1,20 +1,21 @@
 import { Sequelize } from 'sequelize';
-import { env, isProd } from './env.ts';
+import { env } from './env';
 
-export const sequelize = new Sequelize(
-  env.DB_NAME,
-  env.DB_USER,
-  env.DB_PASS,
-  {
-    host: env.DB_HOST,
-    port: env.DB_PORT,
-    dialect: 'postgres',
-    logging: !isProd ? console.log : false,
-    dialectOptions: env.DB_SSL ? { ssl: { require: true, rejectUnauthorized: false } } : {}
-  }
-);
+// Use UTC at DB layer; app renders JST where needed
+export const sequelize = new Sequelize({
+  database: env.DB_NAME,
+  username: env.DB_USER,
+  password: env.DB_PASS,
+  host: env.DB_HOST,
+  port: env.DB_PORT,
+  dialect: 'postgres',
+  logging: env.NODE_ENV === 'development' ? console.log : false,
+  timezone: '+00:00', // UTC timezone
+  dialectOptions: {
+    useUTC: true
+  },
+});
 
-/**
- * Models will be initialized in src/models/index.ts via initModels(sequelize).
- * Import and call from your app bootstrap after `sequelize.authenticate()`.
- */
+// Import all models so they get initialized with sequelize
+// Models will call Model.init() when imported
+import '../models';

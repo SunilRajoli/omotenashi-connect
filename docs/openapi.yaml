@@ -1,0 +1,11 @@
+openapi: 3.0.0
+info:
+  title: Omotenashi Connect API
+  version: 1.0.0
+  description: Booking management system for Japanese service businesses
+servers:
+  - url: http://localhost:3000
+    description: Development server
+
+paths: {}
+

@@ -1,0 +1,9 @@
+paths:
+  /api/businesses:
+    get:
+      summary: List businesses
+      tags: [Businesses]
+      responses:
+        '200':
+          description: List of businesses
+

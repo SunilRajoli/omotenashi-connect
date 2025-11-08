@@ -1,53 +1,62 @@
-# Omotenashi Connect
+# Omotenashi Connect (おもてなしコネクト / Omotenashi Connect)
 
-Japan-ready booking backend (Node.js + TypeScript + Express + Sequelize + PostgreSQL + Redis + BullMQ).
+Japan-ready hospitality booking backend — multi-tenant, JA/EN, konbini-aware.
 
-## Quick start (dev)
-
+## Quick Start
 ```bash
-cp .env.example .env
+cp .env.sample .env
+docker compose up -d db redis
 npm i
+npm run migrate
+npm run seed
 npm run dev
 
+Docs at /docs (Swagger UI).
 
-## 🔐 Authentication (API)
+Scripts
 
-Base path: `/api/v1/auth`
+npm run dev – ts-node + nodemon
 
-| Endpoint                | Method | Auth   | Purpose                          |
-|-------------------------|--------|--------|----------------------------------|
-| `/signup`               | POST   | Public | Create user + send verify email  |
-| `/verify-email`         | GET    | Public | Confirm email via token (query)  |
-| `/login`                | POST   | Public | Email+password → tokens          |
-| `/refresh`              | POST   | Public | Rotate refresh → new pair        |
-| `/logout`               | POST   | Public | Revoke refresh token             |
-| `/forgot-password`      | POST   | Public | Send reset link                  |
-| `/reset-password`       | POST   | Public | Reset with token                 |
-| `/me`                   | GET    | Bearer | Return current user profile      |
+npm run migrate / migrate:undo
 
-### Example (cURL)
+npm run seed
 
-```bash
-# Signup
-curl -X POST http://localhost:4000/api/v1/auth/signup \
-  -H "Content-Type: application/json" \
-  -d '{"email":"demo@example.com","password":"Passw0rd!","fullName":"Demo User"}'
+npm run build && npm start
 
-# Login
-curl -X POST http://localhost:4000/api/v1/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"demo@example.com","password":"Passw0rd!"}'
+Stack
 
-# Me
-curl -X GET http://localhost:4000/api/v1/auth/me \
-  -H "Authorization: Bearer <ACCESS_TOKEN>"
+Node 22, Express, PostgreSQL, Sequelize, Redis/BullMQ, Swagger, TypeScript.
 
-# Refresh
-curl -X POST http://localhost:4000/api/v1/auth/refresh \
-  -H "Content-Type: application/json" \
-  -d '{"refreshToken":"<REFRESH_TOKEN>"}'
 
-# Logout
-curl -X POST http://localhost:4000/api/v1/auth/logout \
-  -H "Content-Type: application/json" \
-  -d '{"refreshToken":"<REFRESH_TOKEN>"}'
+---
+
+## 13) Docs placeholders (create empty files so links work)
+- `docs/ARCHITECTURE.md`  
+- `docs/BACKEND_OVERVIEW.md`  
+- `docs/DATABASE_SCHEMA_FINAL.md`  
+- `docs/JAPAN_LOCALIZATION_GUIDE.md`  
+- `docs/SECURITY_COMPLIANCE.md`  
+- `docs/RUNBOOKS.md`  
+- `docs/TEST_PLAN.md`  
+- `docs/API_CONVENTIONS.md` (include the extra endpoints we listed)  
+- `docs/DEPLOYMENT_GUIDE.md` (include full env list above)  
+- `docs/MONITORING_SETUP.md`  
+- `docs/TROUBLESHOOTING.md`  
+- `docs/SEQUELIZE_ASSOCIATIONS.md`  
+- `docs/openapi.yaml` (put a stub; we’ll expand later)
+
+Minimal `docs/openapi.yaml` stub:
+```yaml
+openapi: 3.0.3
+info:
+  title: Omotenashi Connect API
+  version: 0.1.0
+servers:
+  - url: http://localhost:4000/api/v1
+paths:
+  /health:
+    get:
+      summary: Healthcheck
+      responses:
+        "200":
+          description: OK

@@ -6,8 +6,9 @@
 import { makeWorker } from '../config/bullmq';
 import { QUEUE_NAMES } from './queues';
 import { logger } from '../utils/logger';
-import { NotificationOutbox } from '../models/notificationOutbox.model';
+import { NotificationOutbox, DeliveryStatus } from '../models/notificationOutbox.model';
 import { sequelize } from '../config/sequelize';
+import { Job } from 'bullmq';
 
 interface EmailJobData {
   to: string;
@@ -43,11 +44,11 @@ async function sendEmail(data: EmailJobData): Promise<void> {
 /**
  * Email worker processor
  */
-async function processEmailJob(job: { data: EmailJobData }): Promise<void> {
-  const { data } = job;
+async function processEmailJob(job: Job<EmailJobData>): Promise<void> {
+  const data = job.data;
   
   try {
-    logger.info({ jobId: job.job?.id, to: data.to }, 'Processing email job');
+    logger.info({ jobId: job.id, to: data.to }, 'Processing email job');
     
     // Send email
     await sendEmail(data);
@@ -57,7 +58,7 @@ async function processEmailJob(job: { data: EmailJobData }): Promise<void> {
       await NotificationOutbox.update(
         {
           sent_at: new Date(),
-          delivery_status: 'sent',
+          delivery_status: DeliveryStatus.SENT,
           attempts: sequelize.literal('attempts + 1'),
         },
         {
@@ -66,15 +67,15 @@ async function processEmailJob(job: { data: EmailJobData }): Promise<void> {
       );
     }
     
-    logger.info({ jobId: job.job?.id }, 'Email job completed');
+    logger.info({ jobId: job.id }, 'Email job completed');
   } catch (error) {
-    logger.error({ error, jobId: job.job?.id }, 'Email job failed');
+    logger.error({ error, jobId: job.id }, 'Email job failed');
     
     // Update notification outbox on failure
     if (data.notificationId) {
       await NotificationOutbox.update(
         {
-          delivery_status: 'failed',
+          delivery_status: DeliveryStatus.FAILED,
           error_message: error instanceof Error ? error.message : 'Unknown error',
           attempts: sequelize.literal('attempts + 1'),
         },
@@ -102,7 +103,7 @@ export function startEmailWorker() {
   const worker = createEmailWorker();
   
   worker.on('completed', (job) => {
-    logger.info({ jobId: job.id }, 'Email job completed');
+    logger.info({ jobId: job?.id }, 'Email job completed');
   });
   
   worker.on('failed', (job, err) => {

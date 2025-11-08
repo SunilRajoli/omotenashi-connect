@@ -8,11 +8,17 @@ import { QUEUE_NAMES } from './queues';
 import { logger } from '../utils/logger';
 import { Booking } from '../models/booking.model';
 import { BookingReminder } from '../models/bookingReminder.model';
-import { NotificationOutbox } from '../models/notificationOutbox.model';
+import { NotificationOutbox, DeliveryStatus } from '../models/notificationOutbox.model';
+import { Customer } from '../models/customer.model';
+import { Service } from '../models/service.model';
+import { Resource } from '../models/resource.model';
+import { Business } from '../models/business.model';
+import { BusinessSettings } from '../models/businessSettings.model';
 import { addEmailJob } from './queues';
 import { formatDateTimeJapanese, formatDateTime } from '../utils/dates';
 import { sequelize } from '../config/sequelize';
-import { Op } from 'sequelize';
+import { Op, WhereOptions } from 'sequelize';
+import { Job } from 'bullmq';
 
 interface BookingReminderJobData {
   bookingId: string;
@@ -24,25 +30,26 @@ interface BookingReminderJobData {
  * Booking reminder worker processor
  */
 async function processBookingReminderJob(
-  job: { data: BookingReminderJobData }
+  job: Job<BookingReminderJobData>
 ): Promise<void> {
-  const { data } = job;
+  const data = job.data;
   
   try {
     logger.info(
-      { jobId: job.job?.id, bookingId: data.bookingId, type: data.reminderType },
+      { jobId: job.id, bookingId: data.bookingId, type: data.reminderType },
       'Processing booking reminder job'
     );
     
     // Find booking
     const booking = await Booking.findByPk(data.bookingId, {
       include: [
-        { association: 'customer' },
-        { association: 'service' },
-        { association: 'resource' },
+        { model: Customer, as: 'customer' },
+        { model: Service, as: 'service' },
+        { model: Resource, as: 'resource' },
         {
-          association: 'business',
-          include: [{ association: 'settings' }],
+          model: Business,
+          as: 'business',
+          include: [{ model: BusinessSettings, as: 'settings' }],
         },
       ],
     });
@@ -58,7 +65,7 @@ async function processBookingReminderJob(
         booking_id: data.bookingId,
         reminder_type: data.reminderType,
         sent_at: { [Op.ne]: null },
-      },
+      } as WhereOptions<typeof BookingReminder.prototype>,
     });
     
     if (existingReminder) {
@@ -67,14 +74,15 @@ async function processBookingReminderJob(
     }
     
     // Get customer email
-    const customer = booking.customer;
+    const customer = booking.get('customer') as Customer | undefined;
     if (!customer?.email) {
       logger.warn({ bookingId: data.bookingId }, 'Customer email not found');
       return;
     }
     
     // Determine locale (default to ja)
-    const businessSettings = (booking.business as any)?.settings;
+    const business = booking.get('business') as (Business & { settings?: BusinessSettings }) | undefined;
+    const businessSettings = business?.settings;
     const locale = (businessSettings?.default_locale as 'ja' | 'en') || 'ja';
     
     // Format date/time
@@ -83,6 +91,10 @@ async function processBookingReminderJob(
       : formatDateTime(booking.start_at, 'yyyy-MM-dd HH:mm', 'en');
     
     const bookingTime = formatDateTime(booking.start_at, 'HH:mm', locale);
+    
+    // Get service and resource
+    const service = booking.get('service') as Service | undefined;
+    const resource = booking.get('resource') as Resource | undefined;
     
     // Prepare email data
     const emailData = {
@@ -104,18 +116,18 @@ async function processBookingReminderJob(
       template: `booking_reminder.${locale}.html`,
       data_json: {
         customer_name: customer.name || 'Customer',
-        business_name: booking.business?.display_name_ja || booking.business?.display_name_en || 'Business',
-        service_name: booking.service?.name_ja || booking.service?.name_en || 'Service',
-        resource_name: booking.resource?.name || 'N/A',
+        business_name: business?.display_name_ja || business?.display_name_en || 'Business',
+        service_name: service?.name_ja || service?.name_en || 'Service',
+        resource_name: resource?.name || 'N/A',
         booking_date: bookingDate,
         booking_time: bookingTime,
         booking_id: booking.id,
         business_address: '', // TODO: Format address
-        business_phone: booking.business?.phone || '',
-        business_email: booking.business?.email || '',
+        business_phone: business?.phone || '',
+        business_email: business?.email || '',
       },
       scheduled_at: new Date(data.scheduledAt),
-      delivery_status: 'queued',
+      delivery_status: DeliveryStatus.QUEUED,
       attempts: 0,
     });
     
@@ -137,7 +149,7 @@ async function processBookingReminderJob(
     
     logger.info({ bookingId: data.bookingId }, 'Booking reminder sent');
   } catch (error) {
-    logger.error({ error, jobId: job.job?.id, bookingId: data.bookingId }, 'Booking reminder job failed');
+    logger.error({ error, jobId: job.id, bookingId: data.bookingId }, 'Booking reminder job failed');
     throw error;
   }
 }
@@ -156,7 +168,7 @@ export function startBookingReminderWorker() {
   const worker = createBookingReminderWorker();
   
   worker.on('completed', (job) => {
-    logger.info({ jobId: job.id }, 'Booking reminder job completed');
+    logger.info({ jobId: job?.id }, 'Booking reminder job completed');
   });
   
   worker.on('failed', (job, err) => {

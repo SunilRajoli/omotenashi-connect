@@ -9,21 +9,21 @@ import { logger } from '../utils/logger';
 import { Booking } from '../models/booking.model';
 import { BookingStatus } from '../types/enums';
 import { env } from '../config/env';
-import { Op } from 'sequelize';
+import { Op, WhereOptions } from 'sequelize';
+import { Job } from 'bullmq';
 import { addMinutesToDate } from '../utils/dates';
 
-interface ExpireBookingsJobData {
-  // No data needed - processes all expired bookings
-}
+// No data needed - processes all expired bookings
+type ExpireBookingsJobData = Record<string, never>;
 
 /**
  * Expire bookings worker processor
  */
 async function processExpireBookingsJob(
-  job: { data: ExpireBookingsJobData }
+  job: Job<ExpireBookingsJobData>
 ): Promise<void> {
   try {
-    logger.info({ jobId: job.job?.id }, 'Processing expire bookings job');
+    logger.info({ jobId: job.id }, 'Processing expire bookings job');
     
     const expiryMinutes = env.BOOKING_EXPIRY_MINUTES || 30;
     const expiryThreshold = addMinutesToDate(new Date(), -expiryMinutes);
@@ -37,8 +37,8 @@ async function processExpireBookingsJob(
         created_at: {
           [Op.lt]: expiryThreshold,
         },
-        deleted_at: null,
-      },
+        deleted_at: { [Op.is]: null },
+      } as WhereOptions<typeof Booking.prototype>,
       limit: 100, // Process in batches
     });
     
@@ -67,7 +67,7 @@ async function processExpireBookingsJob(
       'Bookings expired'
     );
   } catch (error) {
-    logger.error({ error, jobId: job.job?.id }, 'Expire bookings job failed');
+    logger.error({ error, jobId: job.id }, 'Expire bookings job failed');
     throw error;
   }
 }
@@ -89,7 +89,7 @@ export function startExpireBookingsWorker() {
   const worker = createExpireBookingsWorker();
   
   worker.on('completed', (job) => {
-    logger.info({ jobId: job.id }, 'Expire bookings job completed');
+    logger.info({ jobId: job?.id }, 'Expire bookings job completed');
   });
   
   worker.on('failed', (job, err) => {

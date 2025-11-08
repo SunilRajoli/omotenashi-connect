@@ -233,3 +233,42 @@ setupAssociations();
 
 export { sequelize };
 export default models;
+
+// Export all models for convenience
+export {
+  User,
+  RefreshToken,
+  EmailVerification,
+  PasswordReset,
+  UserSession,
+  Vertical,
+  Business,
+  BusinessSettings,
+  BusinessVerification,
+  BusinessDocument,
+  BusinessHour,
+  BusinessHoliday,
+  BusinessMedia,
+  Service,
+  Resource,
+  ServiceResource,
+  StaffWorkingHour,
+  StaffException,
+  StaffAssignment,
+  CancellationPolicy,
+  Customer,
+  CustomerNote,
+  Booking,
+  BookingHistory,
+  BookingReminder,
+  Waitlist,
+  BookingPayment,
+  IdempotencyKey,
+  PaymentWebhook,
+  Review,
+  AuditLog,
+  NotificationOutbox,
+  AnalyticsDaily,
+  RateLimit,
+  FeatureFlag,
+};

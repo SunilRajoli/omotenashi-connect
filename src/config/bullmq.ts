@@ -1,4 +1,4 @@
-import { Queue, Worker, JobsOptions } from 'bullmq';
+import { Queue, Worker, JobsOptions, Job } from 'bullmq';
 import { env } from './env';
 import { ensureRedis } from './redis';
 
@@ -15,9 +15,9 @@ export async function makeQueue(name: string) {
 
 export function makeWorker<T = unknown>(
   name: string,
-  processor: (job: { data: T }) => Promise<unknown>
+  processor: (job: Job<T>) => Promise<unknown>
 ) {
-  return new Worker(name, async (job) => processor(job as { data: T }), { connection });
+  return new Worker(name, async (job) => processor(job), { connection });
 }
 
 function defaultJobOptions(): JobsOptions {

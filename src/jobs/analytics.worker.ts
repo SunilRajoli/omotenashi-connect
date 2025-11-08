@@ -12,7 +12,8 @@ import { BookingPayment } from '../models/bookingPayment.model';
 import { Review } from '../models/review.model';
 import { BookingStatus, PaymentStatus } from '../types/enums';
 import { sequelize } from '../config/sequelize';
-import { Op } from 'sequelize';
+import { Op, WhereOptions } from 'sequelize';
+import { Job } from 'bullmq';
 
 interface AnalyticsJobData {
   businessId: string;
@@ -22,12 +23,12 @@ interface AnalyticsJobData {
 /**
  * Analytics worker processor
  */
-async function processAnalyticsJob(job: { data: AnalyticsJobData }): Promise<void> {
-  const { data } = job;
+async function processAnalyticsJob(job: Job<AnalyticsJobData>): Promise<void> {
+  const data = job.data;
   
   try {
     logger.info(
-      { jobId: job.job?.id, businessId: data.businessId, date: data.date },
+      { jobId: job.id, businessId: data.businessId, date: data.date },
       'Processing analytics job'
     );
     
@@ -41,8 +42,8 @@ async function processAnalyticsJob(job: { data: AnalyticsJobData }): Promise<voi
         start_at: {
           [Op.between]: [startOfDay, endOfDay],
         },
-        deleted_at: null,
-      },
+        deleted_at: { [Op.is]: null },
+      } as WhereOptions<typeof Booking.prototype>,
       include: [
         {
           model: BookingPayment,
@@ -57,7 +58,7 @@ async function processAnalyticsJob(job: { data: AnalyticsJobData }): Promise<voi
     
     // Revenue (from succeeded payments)
     const succeededPayments = bookings
-      .flatMap((b) => b.payments || [])
+      .flatMap((b) => (b.get('payments') as BookingPayment[]) || [])
       .filter((p) => p.status === PaymentStatus.SUCCEEDED);
     
     const revenueCents = succeededPayments.reduce(
@@ -82,21 +83,22 @@ async function processAnalyticsJob(job: { data: AnalyticsJobData }): Promise<voi
         created_at: {
           [Op.between]: [startOfDay, endOfDay],
         },
-        deleted_at: null,
+        deleted_at: { [Op.is]: null },
         is_visible: true,
-      },
+      } as WhereOptions<typeof Review.prototype>,
     });
     
     const reviewAvg =
       reviews.length > 0
         ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
-        : null;
+        : undefined;
     
     // Upsert analytics daily record
+    // Note: DATEONLY returns a string, so we use the date string directly
     await AnalyticsDaily.upsert(
       {
         business_id: data.businessId,
-        date: data.date,
+        date: data.date as unknown as Date, // DATEONLY accepts string but interface expects Date
         bookings: totalBookings,
         revenue_cents: revenueCents,
         cancellations,
@@ -119,7 +121,7 @@ async function processAnalyticsJob(job: { data: AnalyticsJobData }): Promise<voi
     );
   } catch (error) {
     logger.error(
-      { error, jobId: job.job?.id, businessId: data.businessId, date: data.date },
+      { error, jobId: job.id, businessId: data.businessId, date: data.date },
       'Analytics job failed'
     );
     throw error;
@@ -140,7 +142,7 @@ export function startAnalyticsWorker() {
   const worker = createAnalyticsWorker();
   
   worker.on('completed', (job) => {
-    logger.info({ jobId: job.id }, 'Analytics job completed');
+    logger.info({ jobId: job?.id }, 'Analytics job completed');
   });
   
   worker.on('failed', (job, err) => {

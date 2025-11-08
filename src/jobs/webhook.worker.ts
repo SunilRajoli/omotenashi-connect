@@ -12,6 +12,7 @@ import { Booking } from '../models/booking.model';
 import { PaymentStatus, BookingStatus } from '../types/enums';
 import { paymentConfig } from '../config/payment';
 import { createHmacSignature, verifyHmacSignature } from '../utils/crypto';
+import { Job } from 'bullmq';
 
 interface WebhookJobData {
   provider: 'stripe' | 'payjp';
@@ -102,8 +103,9 @@ async function processWebhookEvent(
     });
     
     // Update booking status if payment succeeded
-    if (newStatus === PaymentStatus.SUCCEEDED && payment.booking) {
-      await payment.booking.update({
+    const booking = payment.get('booking') as Booking | undefined;
+    if (newStatus === PaymentStatus.SUCCEEDED && booking) {
+      await booking.update({
         status: BookingStatus.CONFIRMED,
       });
     }
@@ -118,12 +120,12 @@ async function processWebhookEvent(
 /**
  * Webhook worker processor
  */
-async function processWebhookJob(job: { data: WebhookJobData }): Promise<void> {
-  const { data } = job;
+async function processWebhookJob(job: Job<WebhookJobData>): Promise<void> {
+  const data = job.data;
   
   try {
     logger.info(
-      { jobId: job.job?.id, provider: data.provider, eventType: data.eventType },
+      { jobId: job.id, provider: data.provider, eventType: data.eventType },
       'Processing webhook job'
     );
     
@@ -148,18 +150,17 @@ async function processWebhookJob(job: { data: WebhookJobData }): Promise<void> {
       );
     }
     
-    logger.info({ jobId: job.job?.id }, 'Webhook job completed');
+    logger.info({ jobId: job.id }, 'Webhook job completed');
   } catch (error) {
     logger.error(
-      { error, jobId: job.job?.id, provider: data.provider },
+      { error, jobId: job.id, provider: data.provider },
       'Webhook job failed'
     );
     
-    // Update webhook record on failure
+    // Update webhook record on failure - note: PaymentWebhook doesn't have error_message field
     if (data.webhookId) {
       await PaymentWebhook.update(
         {
-          error_message: error instanceof Error ? error.message : 'Unknown error',
           retry_count: (data.retryCount || 0) + 1,
         },
         {
@@ -186,7 +187,7 @@ export function startWebhookWorker() {
   const worker = createWebhookWorker();
   
   worker.on('completed', (job) => {
-    logger.info({ jobId: job.id }, 'Webhook job completed');
+    logger.info({ jobId: job?.id }, 'Webhook job completed');
   });
   
   worker.on('failed', (job, err) => {

@@ -24,8 +24,8 @@ export class AuditLog extends Model<AuditLogAttributes, AuditLogCreationAttribut
   declare entity: string;
   declare entity_id?: string;
   declare action: string;
-  declare before_json?: Record<string, any>;
-  declare after_json?: Record<string, any>;
+  declare before_json?: Record<string, unknown>;
+  declare after_json?: Record<string, unknown>;
   declare ip?: string;
   declare ua?: string;
   declare readonly created_at: Date;

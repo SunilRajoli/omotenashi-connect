@@ -47,9 +47,9 @@ export class Booking extends Model<BookingAttributes, BookingCreationAttributes>
   declare end_at: Date;
   declare status: BookingStatus;
   declare source: BookingSource;
-  declare price_snapshot_json?: Record<string, any>;
-  declare policy_snapshot_json?: Record<string, any>;
-  declare metadata: Record<string, any>;
+  declare price_snapshot_json?: Record<string, unknown>;
+  declare policy_snapshot_json?: Record<string, unknown>;
+  declare metadata: Record<string, unknown>;
   declare deleted_at?: Date;
   declare readonly created_at: Date;
   declare readonly updated_at: Date;

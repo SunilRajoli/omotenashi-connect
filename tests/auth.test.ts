@@ -184,11 +184,10 @@ describe('Authentication Service', () => {
   });
 
   describe('Token Refresh', () => {
-    let testUser: User;
     let refreshToken: string;
 
     beforeEach(async () => {
-      testUser = await User.create({
+      await User.create({
         email: 'refresh@example.com',
         password_hash: await hashPassword('password123'),
         role: UserRole.CUSTOMER,

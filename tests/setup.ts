@@ -39,7 +39,7 @@ afterAll(async () => {
     if (redis.isOpen) {
       await redis.quit();
     }
-  } catch (error) {
+  } catch {
     // Ignore Redis errors
   }
 });

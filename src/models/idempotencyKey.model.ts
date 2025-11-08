@@ -17,7 +17,7 @@ export class IdempotencyKey extends Model<IdempotencyKeyAttributes, IdempotencyK
   declare scope: string;
   declare request_hash: string;
   declare status: string;
-  declare response_json?: Record<string, any>;
+  declare response_json?: Record<string, unknown>;
   declare expires_at: Date;
   declare readonly created_at: Date;
 }

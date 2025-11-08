@@ -41,7 +41,7 @@ export class BookingPayment extends Model<BookingPaymentAttributes, BookingPayme
   declare currency: string;
   declare mode: PaymentMode;
   declare status: PaymentStatus;
-  declare raw_response?: Record<string, any>;
+  declare raw_response?: Record<string, unknown>;
   declare readonly created_at: Date;
   declare readonly updated_at: Date;
 }

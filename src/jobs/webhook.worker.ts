@@ -11,7 +11,7 @@ import { BookingPayment } from '../models/bookingPayment.model';
 import { Booking } from '../models/booking.model';
 import { PaymentStatus, BookingStatus } from '../types/enums';
 import { paymentConfig } from '../config/payment';
-import { createHmacSignature, verifyHmacSignature } from '../utils/crypto';
+import { verifyHmacSignature } from '../utils/crypto';
 import { Job } from 'bullmq';
 
 interface WebhookJobData {
@@ -68,7 +68,6 @@ async function processWebhookEvent(
   // Extract payment information from payload
   // This is provider-specific and needs to be implemented based on actual webhook format
   const chargeId = payload.id as string;
-  const amount = payload.amount as number;
   const status = payload.status as string;
   
   // Find payment by provider charge ID

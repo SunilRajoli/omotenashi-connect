@@ -4,7 +4,6 @@
  */
 
 import { UserRole } from './enums';
-import { User } from '../models/user.model';
 import { Business } from '../models/business.model';
 
 declare global {

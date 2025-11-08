@@ -11,7 +11,6 @@ import { Booking } from '../models/booking.model';
 import { BookingPayment } from '../models/bookingPayment.model';
 import { Review } from '../models/review.model';
 import { BookingStatus, PaymentStatus } from '../types/enums';
-import { sequelize } from '../config/sequelize';
 import { Op, WhereOptions } from 'sequelize';
 import { Job } from 'bullmq';
 

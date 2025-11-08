@@ -16,7 +16,6 @@ import { Business } from '../models/business.model';
 import { BusinessSettings } from '../models/businessSettings.model';
 import { addEmailJob } from './queues';
 import { formatDateTimeJapanese, formatDateTime } from '../utils/dates';
-import { sequelize } from '../config/sequelize';
 import { Op, WhereOptions } from 'sequelize';
 import { Job } from 'bullmq';
 

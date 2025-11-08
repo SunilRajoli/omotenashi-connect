@@ -28,7 +28,7 @@ export class Resource extends Model<ResourceAttributes, ResourceCreationAttribut
   declare type: ResourceType;
   declare name: string;
   declare capacity: number;
-  declare attributes_json: Record<string, any>;
+  declare attributes_json: Record<string, unknown>;
   declare is_active: boolean;
   declare deleted_at?: Date;
   declare readonly created_at: Date;

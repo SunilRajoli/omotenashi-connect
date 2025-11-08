@@ -23,7 +23,7 @@ export class StaffAssignment extends Model<StaffAssignmentAttributes, StaffAssig
   declare user_id: string;
   declare business_id: string;
   declare role: StaffRole;
-  declare permissions_json: Record<string, any>;
+  declare permissions_json: Record<string, unknown>;
   declare hired_at: Date;
   declare terminated_at?: Date;
 }

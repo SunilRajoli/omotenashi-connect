@@ -22,7 +22,7 @@ export class Customer extends Model<CustomerAttributes, CustomerCreationAttribut
   declare name?: string;
   declare email?: string;
   declare phone?: string;
-  declare preferences_json: Record<string, any>;
+  declare preferences_json: Record<string, unknown>;
   declare no_show_count: number;
   declare deleted_at?: Date;
   declare readonly created_at: Date;

@@ -39,7 +39,7 @@ export function fromJapanTime(date: Date | string): Date {
 export function formatDate(
   date: Date | string,
   formatStr: string = 'yyyy-MM-dd',
-  locale: 'ja' | 'en' = 'ja'
+  _locale: 'ja' | 'en' = 'ja'
 ): string {
   const dateObj = typeof date === 'string' ? new Date(date) : date;
   if (isNaN(dateObj.getTime())) {

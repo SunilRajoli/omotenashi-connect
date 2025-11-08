@@ -35,7 +35,7 @@ export class Service extends Model<ServiceAttributes, ServiceCreationAttributes>
   declare buffer_before: number;
   declare buffer_after: number;
   declare policy_id?: string;
-  declare metadata: Record<string, any>;
+  declare metadata: Record<string, unknown>;
   declare is_active: boolean;
   declare deleted_at?: Date;
   declare readonly created_at: Date;

@@ -25,7 +25,7 @@ export class BusinessSettings extends Model<BusinessSettingsAttributes, Business
   declare font_family?: string;
   declare default_locale: string;
   declare domain?: string;
-  declare theme_json: Record<string, any>;
+  declare theme_json: Record<string, unknown>;
   declare readonly created_at: Date;
   declare readonly updated_at: Date;
 }

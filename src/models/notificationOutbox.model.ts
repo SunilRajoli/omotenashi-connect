@@ -35,7 +35,7 @@ export class NotificationOutbox extends Model<NotificationOutboxAttributes, Noti
   declare locale: string;
   declare tone: string;
   declare template: string;
-  declare data_json: Record<string, any>;
+  declare data_json: Record<string, unknown>;
   declare scheduled_at?: Date;
   declare sent_at?: Date;
   declare attempts: number;

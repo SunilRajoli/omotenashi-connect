@@ -18,7 +18,7 @@ export class PaymentWebhook extends Model<PaymentWebhookAttributes, PaymentWebho
   declare provider: string;
   declare event_type: string;
   declare signature?: string;
-  declare payload_json: Record<string, any>;
+  declare payload_json: Record<string, unknown>;
   declare processed_at?: Date;
   declare retry_count: number;
   declare readonly created_at: Date;

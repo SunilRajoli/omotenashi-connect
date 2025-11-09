@@ -8,6 +8,17 @@ const connection = {
 };
 
 export async function makeQueue(name: string) {
+  // In test mode, skip Redis connection
+  if (process.env.NODE_ENV === 'test') {
+    // Return a mock queue that doesn't require Redis
+    return {
+      queue: {
+        add: async () => ({ id: 'mock-job-id' }),
+        close: async () => {},
+      } as unknown as Queue,
+    };
+  }
+  
   await ensureRedis();
   const queue = new Queue(name, { connection, defaultJobOptions: defaultJobOptions() });
   return { queue };

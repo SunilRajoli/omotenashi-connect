@@ -2,7 +2,7 @@ import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import { json, urlencoded } from 'express';
-// import { requestLogger } from './middleware/requestLogger'; // future
+import { requestLogger } from './middleware/requestLogger';
 import { mountSwagger } from '../config/swagger';
 import { env } from './config/env';
 
@@ -13,16 +13,16 @@ app.use(helmet());
 app.use(cors({ origin: env.CORS_ORIGIN.split(','), credentials: true }));
 app.use(urlencoded({ extended: true }));
 app.use(json({ limit: `${env.MAX_UPLOAD_SIZE_MB}mb` }));
-// app.use(requestLogger);
+app.use(requestLogger);
 
 // Healthcheck
 app.get('/health', (_req: Request, res: Response) => {
   res.status(200).json({ status: 'ok', env: env.NODE_ENV, time: new Date().toISOString() });
 });
 
-// API base (routers later)
-// import apiRouter from './routes';
-// app.use('/api/v1', apiRouter);
+// API routes
+import apiRouter from './routes';
+app.use('/api/v1', apiRouter);
 
 // Swagger
 mountSwagger(app);

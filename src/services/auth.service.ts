@@ -24,6 +24,11 @@ import {
   NotFoundError,
 } from '../utils/httpErrors';
 import { logger } from '../utils/logger';
+import {
+  sendEmailVerification,
+  sendPasswordReset,
+} from './email.service';
+import { Locale } from '../types/enums';
 
 interface LoginCredentials {
   email: string;
@@ -146,7 +151,12 @@ export async function register(
   await storeRefreshToken(user.id, refreshToken);
 
   // Create email verification token (user needs to verify email)
-  await createEmailVerificationToken(user.id, user.email);
+  const verificationToken = await createEmailVerificationToken(user.id, user.email);
+
+  // Send verification email
+  const userName = user.display_name || user.given_name || user.email;
+  const locale = Locale.JA; // Default to Japanese, can be made configurable
+  await sendEmailVerification(user.email, userName, verificationToken, locale);
 
   logger.info({ userId: user.id, email: user.email }, 'User registered');
 
@@ -282,7 +292,12 @@ export async function requestPasswordReset(email: string): Promise<void> {
     return;
   }
 
-  await createPasswordResetToken(user.id, user.email);
+  const resetToken = await createPasswordResetToken(user.id, user.email);
+
+  // Send password reset email
+  const userName = user.display_name || user.given_name || user.email;
+  const locale = Locale.JA; // Default to Japanese, can be made configurable
+  await sendPasswordReset(user.email, userName, resetToken, locale);
 
   logger.info({ userId: user.id, email: user.email }, 'Password reset requested');
 }
@@ -385,7 +400,12 @@ export async function resendEmailVerification(email: string): Promise<void> {
     throw new NotFoundError('User not found');
   }
 
-  await createEmailVerificationToken(user.id, user.email);
+  const verificationToken = await createEmailVerificationToken(user.id, user.email);
+
+  // Send verification email
+  const userName = user.display_name || user.given_name || user.email;
+  const locale = Locale.JA; // Default to Japanese, can be made configurable
+  await sendEmailVerification(user.email, userName, verificationToken, locale);
 
   logger.info({ userId: user.id }, 'Email verification resent');
 }

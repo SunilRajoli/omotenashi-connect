@@ -1,48 +1,39 @@
-/**
- * Payment validation schemas
- * Zod schemas for payment endpoints
- */
-
 import { z } from 'zod';
-import {
-  uuidSchema,
-  amountCentsSchema,
-  optionalJsonObjectSchema,
-} from '../utils/validators';
-import { PaymentMode } from '../types/enums';
+import { uuidSchema, optionalJsonObjectSchema } from '../utils/validators';
+import { PaymentMode, PaymentStatus } from '../types/enums';
 
 /**
- * Create payment request schema
+ * Create payment intent request schema
  */
-export const createPaymentSchema = z.object({
+export const createPaymentIntentSchema = z.object({
   booking_id: uuidSchema,
-  amount_cents: amountCentsSchema,
+  amount_cents: z.number().int().positive(),
+  currency: z.string().length(3).default('JPY'),
   mode: z.nativeEnum(PaymentMode),
-  provider: z.enum(['stripe', 'payjp']).optional(),
-  idempotency_key: z.string().optional(),
+  metadata: optionalJsonObjectSchema,
 });
 
-export type CreatePaymentRequest = z.infer<typeof createPaymentSchema>;
+export type CreatePaymentIntentRequest = z.infer<typeof createPaymentIntentSchema>;
 
 /**
- * Payment webhook schema
+ * Confirm payment request schema
  */
-export const paymentWebhookSchema = z.object({
-  provider: z.enum(['stripe', 'payjp']),
-  event_type: z.string(),
-  signature: z.string().optional(),
-  payload_json: z.record(z.unknown()),
+export const confirmPaymentSchema = z.object({
+  payment_intent_id: z.string().min(1),
+  payment_method_id: z.string().optional(),
+  return_url: z.string().url().optional(),
 });
 
-export type PaymentWebhookRequest = z.infer<typeof paymentWebhookSchema>;
+export type ConfirmPaymentRequest = z.infer<typeof confirmPaymentSchema>;
 
 /**
  * Refund payment request schema
  */
 export const refundPaymentSchema = z.object({
   payment_id: uuidSchema,
-  amount_cents: amountCentsSchema.optional(), // Partial refund if specified
+  amount_cents: z.number().int().positive().optional(),
   reason: z.string().optional(),
+  metadata: optionalJsonObjectSchema,
 });
 
 export type RefundPaymentRequest = z.infer<typeof refundPaymentSchema>;
@@ -52,13 +43,10 @@ export type RefundPaymentRequest = z.infer<typeof refundPaymentSchema>;
  */
 export const paymentQuerySchema = z.object({
   booking_id: uuidSchema.optional(),
-  status: z.enum(['pending', 'succeeded', 'failed', 'refunded']).optional(),
+  status: z.nativeEnum(PaymentStatus).optional(),
   provider: z.enum(['stripe', 'payjp']).optional(),
-  start_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-  end_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   page: z.number().int().positive().optional().default(1),
   limit: z.number().int().positive().max(100).optional().default(20),
 });
 
 export type PaymentQueryParams = z.infer<typeof paymentQuerySchema>;
-

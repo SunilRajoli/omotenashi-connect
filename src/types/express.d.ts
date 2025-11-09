@@ -33,9 +33,13 @@ declare global {
       
       // Idempotency
       idempotencyKey?: string;
+      
+      // File upload (multer)
+      file?: Express.Multer.File;
+      files?: Express.Multer.File[];
     }
 
-    interface Response {
+    export interface Response {
       // Custom response helpers
       success?: (data: unknown, message?: string) => void;
       error?: (error: Error | string, statusCode?: number) => void;

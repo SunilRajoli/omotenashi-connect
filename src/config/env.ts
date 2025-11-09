@@ -47,4 +47,10 @@ export const env = {
   ANALYTICS_SCHEDULE_CRON: process.env.ANALYTICS_SCHEDULE_CRON || '0 2 * * *',
   BOOKING_EXPIRY_MINUTES: Number(process.env.BOOKING_EXPIRY_MINUTES || 30),
   LOG_LEVEL: process.env.LOG_LEVEL || 'info',
+
+  // Email (SendGrid)
+  SENDGRID_API_KEY: process.env.SENDGRID_API_KEY || '',
+  FROM_EMAIL: process.env.FROM_EMAIL || 'noreply@omotenashi-connect.com',
+  FROM_NAME: process.env.FROM_NAME || 'Omotenashi Connect',
+  APP_URL: process.env.APP_URL || 'http://localhost:4000',
 };

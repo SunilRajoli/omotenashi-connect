@@ -9,6 +9,7 @@ import { logger } from '../utils/logger';
 import { NotificationOutbox, DeliveryStatus } from '../models/notificationOutbox.model';
 import { sequelize } from '../config/sequelize';
 import { Job } from 'bullmq';
+import { env } from '../config/env';
 
 interface EmailJobData {
   to: string;
@@ -20,25 +21,42 @@ interface EmailJobData {
 }
 
 /**
- * Send email (placeholder - integrate with SendGrid/Twilio)
- * TODO: Integrate with actual email service (SendGrid, AWS SES, etc.)
+ * Send email via SendGrid
  */
 async function sendEmail(data: EmailJobData): Promise<void> {
-  // TODO: Replace with actual email service integration
-  logger.info({ to: data.to, subject: data.subject }, 'Sending email');
-  
-  // Example: SendGrid integration
-  // const sgMail = require('@sendgrid/mail');
-  // sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-  // await sgMail.send({
-  //   to: data.to,
-  //   from: process.env.FROM_EMAIL,
-  //   subject: data.subject,
-  //   html: data.html,
-  // });
-  
-  // For now, just log
-  logger.info({ email: data.to }, 'Email sent (mock)');
+  // Use SendGrid if configured, otherwise log
+  if (env.SENDGRID_API_KEY) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const sgMail = require('@sendgrid/mail');
+      sgMail.setApiKey(env.SENDGRID_API_KEY);
+
+      await sgMail.send({
+        to: data.to,
+        from: {
+          email: env.FROM_EMAIL,
+          name: env.FROM_NAME,
+        },
+        subject: data.subject,
+        html: data.html,
+      });
+
+      logger.info({ to: data.to, subject: data.subject }, 'Email sent via SendGrid');
+    } catch (error) {
+      logger.error({ error, to: data.to }, 'Failed to send email via SendGrid');
+      throw error;
+    }
+  } else {
+    // Development/test mode - just log
+    logger.info(
+      {
+        to: data.to,
+        subject: data.subject,
+        htmlLength: data.html.length,
+      },
+      'Email would be sent (SendGrid not configured)'
+    );
+  }
 }
 
 /**

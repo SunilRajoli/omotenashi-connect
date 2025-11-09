@@ -2,10 +2,83 @@ openapi: 3.0.0
 info:
   title: Omotenashi Connect API
   version: 1.0.0
-  description: Booking management system for Japanese service businesses
-servers:
-  - url: http://localhost:3000
-    description: Development server
+  description: |
+    Comprehensive booking and business management platform for Japanese service businesses.
+    
+    Features:
+    - Authentication & Authorization (JWT with token rotation)
+    - Business Management (CRUD, settings, hours, holidays, media)
+    - Service Catalog (Services with pricing, duration, resources)
+    - Resource Management (Staff, equipment, rooms)
+    - Booking System (Availability checking, waitlist, history)
+    - Payment Processing (PayJP and Stripe integration)
+    - Customer Management (CRM with notes and history)
+    - Staff Management (Assignments, working hours, exceptions)
+    - Reviews & Moderation (Review system with business responses)
+    - Media Management (S3 storage with presigned URLs)
+    - Analytics (Daily aggregation and dashboard statistics)
+    - Notifications (Email notifications with preferences)
+    - Audit Logging (Complete audit trail)
+    - Feature Flags (Gradual feature rollout)
+    - Cancellation Policies (Flexible policies with penalties)
+  contact:
+    name: Omotenashi Connect Support
+    email: support@omotenashi-connect.com
+  license:
+    name: Proprietary
 
-paths: {}
+servers:
+  - url: http://localhost:4000/api/v1
+    description: Development server
+  - url: https://api.omotenashi-connect.com/api/v1
+    description: Production server
+
+tags:
+  - name: Auth
+    description: Authentication and authorization endpoints
+  - name: Businesses
+    description: Business management endpoints
+  - name: Services
+    description: Service catalog endpoints
+  - name: Resources
+    description: Resource management endpoints
+  - name: Bookings
+    description: Booking management endpoints
+  - name: Payments
+    description: Payment processing endpoints
+  - name: Customers
+    description: Customer management endpoints
+  - name: Staff
+    description: Staff management endpoints
+  - name: Reviews
+    description: Review management endpoints
+  - name: Media
+    description: Media management endpoints
+  - name: Analytics
+    description: Analytics and reporting endpoints
+  - name: Notifications
+    description: Notification management endpoints
+  - name: Policies
+    description: Cancellation policy endpoints
+  - name: Feature Flags
+    description: Feature flag management endpoints
+  - name: Audit
+    description: Audit log endpoints
+  - name: Admin
+    description: Admin-only endpoints
+
+security:
+  - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT access token
+
+paths:
+  # Import all path definitions from separate files
+  # These are referenced in the Swagger UI configuration
 

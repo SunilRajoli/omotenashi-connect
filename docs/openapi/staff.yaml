@@ -1,0 +1,323 @@
+paths:
+  /api/v1/staff/assignments:
+    get:
+      summary: List staff assignments
+      tags: [Staff]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: business_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: user_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: role
+          in: query
+          schema:
+            type: string
+            enum: [manager, staff, assistant]
+      responses:
+        '200':
+          description: List of staff assignments
+    post:
+      summary: Create staff assignment
+      tags: [Staff]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - business_id
+                - user_id
+                - role
+              properties:
+                business_id:
+                  type: string
+                  format: uuid
+                user_id:
+                  type: string
+                  format: uuid
+                role:
+                  type: string
+                  enum: [manager, staff, assistant]
+                permissions:
+                  type: object
+      responses:
+        '201':
+          description: Staff assignment created
+
+  /api/v1/staff/assignments/{id}:
+    get:
+      summary: Get staff assignment by ID
+      tags: [Staff]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Staff assignment details
+    put:
+      summary: Update staff assignment
+      tags: [Staff]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role:
+                  type: string
+                  enum: [manager, staff, assistant]
+                permissions:
+                  type: object
+      responses:
+        '200':
+          description: Staff assignment updated
+    delete:
+      summary: Terminate staff assignment
+      tags: [Staff]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Staff assignment terminated
+
+  /api/v1/staff/working-hours:
+    put:
+      summary: Update staff working hours
+      tags: [Staff]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - resource_id
+                - day_of_week
+                - start_time
+                - end_time
+              properties:
+                resource_id:
+                  type: string
+                  format: uuid
+                day_of_week:
+                  type: integer
+                  minimum: 0
+                  maximum: 6
+                start_time:
+                  type: string
+                end_time:
+                  type: string
+      responses:
+        '200':
+          description: Working hours updated
+    get:
+      summary: Get staff working hours
+      tags: [Staff]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: resource_id
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Staff working hours
+
+  /api/v1/staff/working-hours/{resourceId}:
+    get:
+      summary: Get staff working hours by resource ID
+      tags: [Staff]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: resourceId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Staff working hours
+
+  /api/v1/staff/exceptions:
+    post:
+      summary: Create staff exception
+      tags: [Staff]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - resource_id
+                - date
+              properties:
+                resource_id:
+                  type: string
+                  format: uuid
+                date:
+                  type: string
+                  format: date
+                is_working:
+                  type: boolean
+                start_time:
+                  type: string
+                end_time:
+                  type: string
+      responses:
+        '201':
+          description: Staff exception created
+    get:
+      summary: List staff exceptions
+      tags: [Staff]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: resource_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: List of staff exceptions
+
+  /api/v1/staff/exceptions/{id}:
+    get:
+      summary: Get staff exception by ID
+      tags: [Staff]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Staff exception details
+    put:
+      summary: Update staff exception
+      tags: [Staff]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                is_working:
+                  type: boolean
+                start_time:
+                  type: string
+                end_time:
+                  type: string
+      responses:
+        '200':
+          description: Staff exception updated
+    delete:
+      summary: Delete staff exception
+      tags: [Staff]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Staff exception deleted
+
+  /api/v1/staff/assign-to-booking:
+    post:
+      summary: Assign staff to booking
+      tags: [Staff]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - booking_id
+                - resource_id
+              properties:
+                booking_id:
+                  type: string
+                  format: uuid
+                resource_id:
+                  type: string
+                  format: uuid
+      responses:
+        '200':
+          description: Staff assigned to booking
+

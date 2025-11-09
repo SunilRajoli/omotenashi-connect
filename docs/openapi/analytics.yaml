@@ -1,0 +1,107 @@
+paths:
+  /api/v1/analytics:
+    get:
+      summary: List analytics records
+      tags: [Analytics]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: business_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: List of analytics records
+
+  /api/v1/analytics/{id}:
+    get:
+      summary: Get analytics record by ID
+      tags: [Analytics]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Analytics record details
+
+  /api/v1/analytics/dashboard:
+    get:
+      summary: Get dashboard statistics
+      tags: [Analytics]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: business_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Dashboard statistics
+
+  /api/v1/businesses/{businessId}/analytics:
+    get:
+      summary: Get business analytics summary
+      tags: [Analytics]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: businessId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: start_date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: end_date
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Business analytics summary
+

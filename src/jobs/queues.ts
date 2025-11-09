@@ -75,6 +75,7 @@ export async function addEmailJob(data: {
   html: string;
   locale?: 'ja' | 'en';
   scheduledAt?: Date;
+  notificationId?: string;
 }) {
   const queue = await getEmailQueue();
   return queue.add('send-email', data, {
@@ -128,6 +129,7 @@ export async function addWebhookJob(data: {
   payload: Record<string, unknown>;
   signature?: string;
   retryCount?: number;
+  webhookId?: string;
 }) {
   const queue = await getWebhookQueue();
   return queue.add('process-webhook', data, {

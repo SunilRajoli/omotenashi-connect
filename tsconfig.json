@@ -11,6 +11,9 @@
     "resolveJsonModule": true,
     "types": ["node", "express", "jest"]
   },
-  "include": ["src/**/*.ts", "scripts/**/*.ts", "config/**/*.ts", "tests/**/*.ts"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src/**/*.ts", "src/**/*.d.ts", "scripts/**/*.ts", "config/**/*.ts", "tests/**/*.ts"],
+  "exclude": ["node_modules", "dist"],
+  "ts-node": {
+    "files": true
+  }
 }

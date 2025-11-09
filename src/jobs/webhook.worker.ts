@@ -3,15 +3,23 @@
  * Processes payment webhooks from Stripe/Pay.jp
  */
 
+import { Op } from 'sequelize';
 import { makeWorker } from '../config/bullmq';
 import { QUEUE_NAMES } from './queues';
 import { logger } from '../utils/logger';
 import { PaymentWebhook } from '../models/paymentWebhook.model';
 import { BookingPayment } from '../models/bookingPayment.model';
 import { Booking } from '../models/booking.model';
-import { PaymentStatus, BookingStatus } from '../types/enums';
+import { Business } from '../models/business.model';
+import { Service } from '../models/service.model';
+import { Customer } from '../models/customer.model';
+import { BusinessSettings } from '../models/businessSettings.model';
+import { PaymentStatus } from '../types/enums';
+import { BookingStatus } from '../models/booking.model';
+import { Locale } from '../types/enums';
 import { paymentConfig } from '../config/payment';
 import { verifyHmacSignature } from '../utils/crypto';
+import { sendPaymentReceived } from '../services/email.service';
 import { Job } from 'bullmq';
 
 interface WebhookJobData {
@@ -70,23 +78,36 @@ async function processWebhookEvent(
   const chargeId = payload.id as string;
   const status = payload.status as string;
   
-  // Find payment by provider charge ID
+  // Find payment by provider charge ID or intent ID
   const payment = await BookingPayment.findOne({
     where: {
       provider,
-      provider_charge_id: chargeId,
+      [Op.or]: [
+        { provider_charge_id: chargeId },
+        { provider_intent_id: chargeId },
+      ],
     },
-    include: [{ model: Booking, as: 'booking' }],
+    include: [
+      {
+        model: Booking,
+        as: 'booking',
+        include: [
+          { model: Business, as: 'business' },
+          { model: Service, as: 'service' },
+          { model: Customer, as: 'customer' },
+        ],
+      },
+    ],
   });
-  
+
   if (!payment) {
     logger.warn({ provider, chargeId }, 'Payment not found for webhook');
     return;
   }
-  
+
   // Update payment status based on webhook event
   let newStatus: PaymentStatus | null = null;
-  
+
   if (eventType.includes('succeeded') || status === 'succeeded') {
     newStatus = PaymentStatus.SUCCEEDED;
   } else if (eventType.includes('failed') || status === 'failed') {
@@ -94,7 +115,7 @@ async function processWebhookEvent(
   } else if (eventType.includes('refunded') || status === 'refunded') {
     newStatus = PaymentStatus.REFUNDED;
   }
-  
+
   if (newStatus && newStatus !== payment.status) {
     await payment.update({
       status: newStatus,
@@ -107,6 +128,33 @@ async function processWebhookEvent(
       await booking.update({
         status: BookingStatus.CONFIRMED,
       });
+
+      // Send payment received email
+      const business = booking.get('business') as Business | undefined;
+      const service = booking.get('service') as Service | undefined;
+      const customer = booking.get('customer') as Customer | undefined;
+
+      if (customer?.email && business && service) {
+        try {
+          const settings = await BusinessSettings.findOne({
+            where: { business_id: business.id },
+          });
+          const locale = (settings?.default_locale as Locale) || Locale.JA;
+
+          await sendPaymentReceived(customer.email, locale, {
+            customerName: customer.name || customer.email,
+            businessName: business.display_name_ja || business.display_name_en || business.slug,
+            amount: payment.amount_cents / 100, // Convert cents to currency unit
+            currency: payment.currency,
+            paymentId: payment.id,
+            bookingId: booking.id,
+          });
+
+          logger.info({ paymentId: payment.id, customerEmail: customer.email }, 'Payment received email sent via webhook');
+        } catch (error) {
+          logger.error({ error, paymentId: payment.id }, 'Failed to send payment received email via webhook');
+        }
+      }
     }
     
     logger.info(

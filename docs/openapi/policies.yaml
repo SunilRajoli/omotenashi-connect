@@ -1,0 +1,130 @@
+paths:
+  /api/v1/policies:
+    get:
+      summary: List cancellation policies
+      tags: [Policies]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: business_id
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: is_default
+          in: query
+          schema:
+            type: boolean
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: List of cancellation policies
+    post:
+      summary: Create cancellation policy
+      tags: [Policies]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - business_id
+                - name
+                - hours_before
+                - penalty_percent
+              properties:
+                business_id:
+                  type: string
+                  format: uuid
+                name:
+                  type: string
+                hours_before:
+                  type: integer
+                  minimum: 0
+                penalty_percent:
+                  type: integer
+                  minimum: 0
+                  maximum: 100
+                is_default:
+                  type: boolean
+      responses:
+        '201':
+          description: Cancellation policy created
+
+  /api/v1/policies/{id}:
+    get:
+      summary: Get cancellation policy by ID
+      tags: [Policies]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Cancellation policy details
+    put:
+      summary: Update cancellation policy
+      tags: [Policies]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                hours_before:
+                  type: integer
+                  minimum: 0
+                penalty_percent:
+                  type: integer
+                  minimum: 0
+                  maximum: 100
+                is_default:
+                  type: boolean
+      responses:
+        '200':
+          description: Cancellation policy updated
+    delete:
+      summary: Delete cancellation policy
+      tags: [Policies]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Cancellation policy deleted
+

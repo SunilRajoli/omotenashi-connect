@@ -1,0 +1,162 @@
+paths:
+  /api/v1/feature-flags:
+    get:
+      summary: List feature flags
+      tags: [Feature Flags]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: is_enabled
+          in: query
+          schema:
+            type: boolean
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: List of feature flags
+    post:
+      summary: Create feature flag
+      tags: [Feature Flags]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                is_enabled:
+                  type: boolean
+                rollout_percent:
+                  type: integer
+                  minimum: 0
+                  maximum: 100
+                target_user_ids:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                target_business_ids:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+      responses:
+        '201':
+          description: Feature flag created
+
+  /api/v1/feature-flags/{id}:
+    get:
+      summary: Get feature flag by ID
+      tags: [Feature Flags]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Feature flag details
+    put:
+      summary: Update feature flag
+      tags: [Feature Flags]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                is_enabled:
+                  type: boolean
+                rollout_percent:
+                  type: integer
+                  minimum: 0
+                  maximum: 100
+                target_user_ids:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                target_business_ids:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+      responses:
+        '200':
+          description: Feature flag updated
+    delete:
+      summary: Delete feature flag
+      tags: [Feature Flags]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Feature flag deleted
+
+  /api/v1/feature-flags/check/{name}:
+    get:
+      summary: Check feature flag by name
+      tags: [Feature Flags]
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Feature flag status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  isEnabled:
+                    type: boolean
+

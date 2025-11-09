@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { uuidSchema } from '../utils/validators';
 import { NotificationTone, Locale } from '../types/enums';
 import { DeliveryStatus } from '../models/notificationOutbox.model';
 

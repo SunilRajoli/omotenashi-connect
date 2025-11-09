@@ -11,7 +11,6 @@ import { Booking, BookingStatus } from '../models/booking.model';
 import { BusinessHour } from '../models/businessHour.model';
 import { BusinessHoliday } from '../models/businessHoliday.model';
 import { NotFoundError, BadRequestError } from '../utils/httpErrors';
-import { logger } from '../utils/logger';
 
 export interface TimeSlot {
   start: Date;
@@ -171,7 +170,7 @@ export async function checkAvailability(
   // Generate time slots
   const slots: TimeSlot[] = [];
   const slotDuration = 15; // 15-minute intervals
-  let currentTime = new Date(openDateTime);
+  const currentTime = new Date(openDateTime);
 
   while (currentTime < closeDateTime) {
     const slotEnd = new Date(currentTime);

@@ -7,16 +7,9 @@ import {
   UserRole,
   BusinessStatus,
   OnboardingStatus,
-  VerificationStatus,
   ResourceType,
-  StaffRole,
-  BookingStatus,
-  BookingSource,
   PaymentMode,
   PaymentStatus,
-  WaitlistStatus,
-  NoteType,
-  DeliveryStatus,
 } from './enums';
 
 // User types

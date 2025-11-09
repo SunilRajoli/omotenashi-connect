@@ -5,7 +5,7 @@
 
 import { Transaction, WhereOptions, Op } from 'sequelize';
 import { sequelize } from '../config/sequelize';
-import { StaffAssignment, StaffRole } from '../models/staffAssignment.model';
+import { StaffAssignment } from '../models/staffAssignment.model';
 import { StaffWorkingHour } from '../models/staffWorkingHour.model';
 import { StaffException } from '../models/staffException.model';
 import { Business } from '../models/business.model';

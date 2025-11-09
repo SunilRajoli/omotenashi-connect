@@ -22,10 +22,9 @@ import {
 } from '../utils/httpErrors';
 import { logger } from '../utils/logger';
 import { CreateBookingRequest, UpdateBookingRequest, BookingQueryParams } from '../validators/booking.validator';
-import { checkAvailability, isTimeSlotAvailable, getAvailableResources } from './availability.service';
+import { isTimeSlotAvailable, getAvailableResources } from './availability.service';
 import { sendBookingConfirmation } from './email.service';
 import { Locale } from '../types/enums';
-import { env } from '../config/env';
 
 /**
  * Create a new booking

@@ -10,7 +10,6 @@ import { Business } from '../models/business.model';
 import { Service } from '../models/service.model';
 import {
   NotFoundError,
-  BadRequestError,
   ForbiddenError,
   ConflictError,
 } from '../utils/httpErrors';

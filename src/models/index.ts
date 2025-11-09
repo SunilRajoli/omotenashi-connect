@@ -85,8 +85,7 @@ export function setupAssociations() {
     Service, Resource, ServiceResource, StaffWorkingHour, StaffException, StaffAssignment,
     CancellationPolicy, Customer, CustomerNote,
     Booking, BookingHistory, BookingReminder, Waitlist,
-    BookingPayment, IdempotencyKey: _IdempotencyKey, PaymentWebhook: _PaymentWebhook, Review, AuditLog,
-    NotificationOutbox: _NotificationOutbox, AnalyticsDaily, RateLimit: _RateLimit, FeatureFlag: _FeatureFlag
+    BookingPayment, Review, AuditLog, AnalyticsDaily
   } = models;
 
   // User associations

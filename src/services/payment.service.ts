@@ -5,7 +5,7 @@
 
 import { Transaction, WhereOptions, Op } from 'sequelize';
 import { sequelize } from '../config/sequelize';
-import { BookingPayment, PaymentMode, PaymentStatus } from '../models/bookingPayment.model';
+import { BookingPayment, PaymentStatus } from '../models/bookingPayment.model';
 import { Booking, BookingStatus } from '../models/booking.model';
 import { Business } from '../models/business.model';
 import { Service } from '../models/service.model';
@@ -32,15 +32,6 @@ import {
 } from '../validators/payment.validator';
 
 /**
- * Generate idempotency key
- */
-function generateIdempotencyKey(scope: string, requestData: Record<string, unknown>): string {
-  const requestString = JSON.stringify(requestData);
-  const hash = createHash('sha256').update(requestString).digest('hex');
-  return `${scope}:${hash}`;
-}
-
-/**
  * Check idempotency
  */
 async function checkIdempotency(
@@ -48,7 +39,6 @@ async function checkIdempotency(
   requestData: Record<string, unknown>,
   transaction?: Transaction
 ): Promise<{ exists: boolean; response?: Record<string, unknown> }> {
-  const key = generateIdempotencyKey(scope, requestData);
   const requestHash = createHash('sha256').update(JSON.stringify(requestData)).digest('hex');
 
   const existing = await IdempotencyKey.findOne({

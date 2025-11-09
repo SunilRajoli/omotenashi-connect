@@ -6,7 +6,7 @@
 import { Transaction, WhereOptions, Op } from 'sequelize';
 import { sequelize } from '../config/sequelize';
 import { Customer } from '../models/customer.model';
-import { CustomerNote, NoteType } from '../models/customerNote.model';
+import { CustomerNote } from '../models/customerNote.model';
 import { Business } from '../models/business.model';
 import { User } from '../models/user.model';
 import { Booking } from '../models/booking.model';

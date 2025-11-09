@@ -3,7 +3,7 @@
  * Handles analytics data queries and dashboard statistics
  */
 
-import { WhereOptions, Op, Sequelize } from 'sequelize';
+import { WhereOptions, Op } from 'sequelize';
 import { AnalyticsDaily } from '../models/analyticsDaily.model';
 import { Business } from '../models/business.model';
 import {

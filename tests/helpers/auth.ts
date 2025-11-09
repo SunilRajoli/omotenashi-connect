@@ -9,7 +9,6 @@ import {
   login,
 } from '../../src/services/auth.service';
 import { UserRole } from '../../src/types/enums';
-import { createTestUser } from './factory';
 
 /**
  * Register and login a test user

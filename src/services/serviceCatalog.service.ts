@@ -5,7 +5,7 @@
 
 import { Op, WhereOptions } from 'sequelize';
 import { Service } from '../models/service.model';
-import { Resource, ResourceType } from '../models/resource.model';
+import { Resource } from '../models/resource.model';
 import { ServiceResource } from '../models/serviceResource.model';
 import { Business } from '../models/business.model';
 import { CancellationPolicy } from '../models/cancellationPolicy.model';

@@ -8,7 +8,6 @@ import { sequelize } from '../config/sequelize';
 import { FeatureFlag } from '../models/featureFlag.model';
 import {
   NotFoundError,
-  BadRequestError,
   ForbiddenError,
   ConflictError,
 } from '../utils/httpErrors';

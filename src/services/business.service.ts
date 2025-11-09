@@ -11,13 +11,12 @@ import { User } from '../models/user.model';
 import { Service } from '../models/service.model';
 import {
   NotFoundError,
-  BadRequestError,
   ConflictError,
   ForbiddenError,
 } from '../utils/httpErrors';
 import { logger } from '../utils/logger';
 import { CreateBusinessRequest, UpdateBusinessRequest, BusinessQueryParams } from '../validators/business.validator';
-import { sendBusinessCreated, sendBusinessApproved } from './email.service';
+import { sendBusinessCreated } from './email.service';
 import { Locale } from '../types/enums';
 import { env } from '../config/env';
 

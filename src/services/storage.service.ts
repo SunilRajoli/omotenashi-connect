@@ -107,7 +107,6 @@ export async function deleteFile(key: string): Promise<void> {
 export function generateMediaKey(businessId: string, filename: string, type: 'image' | 'video'): string {
   const timestamp = Date.now();
   const sanitizedFilename = filename.replace(/[^a-zA-Z0-9.-]/g, '_');
-  const extension = sanitizedFilename.split('.').pop() || 'jpg';
   return `businesses/${businessId}/media/${type}/${timestamp}_${sanitizedFilename}`;
 }
 

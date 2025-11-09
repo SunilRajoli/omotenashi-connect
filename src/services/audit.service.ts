@@ -6,7 +6,6 @@
 import { Transaction, WhereOptions, Op } from 'sequelize';
 import { AuditLog } from '../models/auditLog.model';
 import { User, UserRole } from '../models/user.model';
-import { NotFoundError, ForbiddenError } from '../utils/httpErrors';
 import { logger } from '../utils/logger';
 
 export interface AuditLogData {

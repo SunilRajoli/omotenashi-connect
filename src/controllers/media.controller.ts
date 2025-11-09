@@ -19,7 +19,6 @@ import {
   UpdateMediaRequest,
   MediaQueryParams,
 } from '../validators/media.validator';
-import { BadRequestError } from '../utils/httpErrors';
 
 /**
  * Upload and create media

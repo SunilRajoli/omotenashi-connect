@@ -3,7 +3,6 @@
  * Handles business operating hours management
  */
 
-import { Op } from 'sequelize';
 import { BusinessHour } from '../models/businessHour.model';
 import { Business } from '../models/business.model';
 import {

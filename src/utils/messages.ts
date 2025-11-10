@@ -330,13 +330,59 @@ const messages: Messages = {
     ja: 'ウェイトリストに追加しました。',
     en: 'Added to waitlist successfully.',
   },
+  'waitlist.updated': {
+    ja: 'ウェイトリストエントリを更新しました。',
+    en: 'Waitlist entry updated successfully.',
+  },
+  'waitlist.cancelled': {
+    ja: 'ウェイトリストエントリをキャンセルしました。',
+    en: 'Waitlist entry cancelled successfully.',
+  },
   'waitlist.get': {
     ja: 'ウェイトリスト情報を取得しました。',
     en: 'Waitlist information retrieved successfully.',
   },
+  'waitlist.list': {
+    ja: 'ウェイトリスト一覧を取得しました。',
+    en: 'Waitlist entries retrieved successfully.',
+  },
   'waitlist.not_found': {
     ja: 'ウェイトリストエントリが見つかりません。',
     en: 'Waitlist entry not found.',
+  },
+  'waitlist.notified': {
+    ja: 'ウェイトリストエントリに通知を送信しました。',
+    en: 'Notification sent to waitlist entry successfully.',
+  },
+  'waitlist.converted': {
+    ja: 'ウェイトリストエントリを予約に変換しました。',
+    en: 'Waitlist entry converted to booking successfully.',
+  },
+
+  // Invoice messages
+  'invoice.created': {
+    ja: '請求書を作成しました。',
+    en: 'Invoice created successfully.',
+  },
+  'invoice.updated': {
+    ja: '請求書を更新しました。',
+    en: 'Invoice updated successfully.',
+  },
+  'invoice.get': {
+    ja: '請求書情報を取得しました。',
+    en: 'Invoice information retrieved successfully.',
+  },
+  'invoice.list': {
+    ja: '請求書一覧を取得しました。',
+    en: 'Invoices retrieved successfully.',
+  },
+  'invoice.not_found': {
+    ja: '請求書が見つかりません。',
+    en: 'Invoice not found.',
+  },
+  'invoice.pdf_regenerated': {
+    ja: '請求書のPDFを再生成しました。',
+    en: 'Invoice PDF regenerated successfully.',
   },
 
   // Availability messages
@@ -693,6 +739,218 @@ const messages: Messages = {
   'featureFlag.already_exists': {
     ja: 'この名前の機能フラグは既に存在します。',
     en: 'Feature flag with this name already exists.',
+  },
+
+  // QR Code messages
+  'qr_code_generated': {
+    ja: 'QRコードを生成しました。',
+    en: 'QR code generated successfully.',
+  },
+  'qr_code_retrieved': {
+    ja: 'QRコード情報を取得しました。',
+    en: 'QR code information retrieved successfully.',
+  },
+  'check_in_success': {
+    ja: 'チェックインが完了しました。',
+    en: 'Check-in completed successfully.',
+  },
+  'qr_code.not_found': {
+    ja: 'QRコードが見つかりません。',
+    en: 'QR code not found.',
+  },
+  'qr_code.expired': {
+    ja: 'QRコードの有効期限が切れています。',
+    en: 'QR code has expired.',
+  },
+  'qr_code.already_used': {
+    ja: 'このQRコードは既に使用されています。',
+    en: 'This QR code has already been used.',
+  },
+
+  // LINE messages
+  'line_account_linked': {
+    ja: 'LINEアカウントをリンクしました。',
+    en: 'LINE account linked successfully.',
+  },
+  'line_account_unlinked': {
+    ja: 'LINEアカウントのリンクを解除しました。',
+    en: 'LINE account unlinked successfully.',
+  },
+  'line_account_status': {
+    ja: 'LINEアカウントの状態を取得しました。',
+    en: 'LINE account status retrieved successfully.',
+  },
+  'line_account.not_found': {
+    ja: 'LINEアカウントが見つかりません。',
+    en: 'LINE account not found.',
+  },
+  'line_account.already_linked': {
+    ja: 'LINEアカウントは既にリンクされています。',
+    en: 'LINE account is already linked.',
+  },
+
+  // Deposit messages
+  'deposit_info_retrieved': {
+    ja: 'デポジット情報を取得しました。',
+    en: 'Deposit information retrieved successfully.',
+  },
+  'deposit_status_retrieved': {
+    ja: 'デポジット支払い状態を取得しました。',
+    en: 'Deposit payment status retrieved successfully.',
+  },
+  'deposit.paid': {
+    ja: 'デポジットが支払われました。',
+    en: 'Deposit paid successfully.',
+  },
+  'deposit.not_found': {
+    ja: 'デポジット情報が見つかりません。',
+    en: 'Deposit information not found.',
+  },
+  'deposit.required': {
+    ja: 'デポジットが必要です。',
+    en: 'Deposit is required.',
+  },
+  'deposit.due': {
+    ja: 'デポジットの支払い期限が過ぎています。',
+    en: 'Deposit payment is due.',
+  },
+
+  // Pricing messages
+  'pricing_rule_created': {
+    ja: '価格ルールを作成しました。',
+    en: 'Pricing rule created successfully.',
+  },
+  'pricing_rule_updated': {
+    ja: '価格ルールを更新しました。',
+    en: 'Pricing rule updated successfully.',
+  },
+  'pricing_rule_deleted': {
+    ja: '価格ルールを削除しました。',
+    en: 'Pricing rule deleted successfully.',
+  },
+  'pricing_rules_retrieved': {
+    ja: '価格ルール一覧を取得しました。',
+    en: 'Pricing rules retrieved successfully.',
+  },
+  'price_preview_retrieved': {
+    ja: '価格プレビューを取得しました。',
+    en: 'Price preview retrieved successfully.',
+  },
+  'pricing_rule.not_found': {
+    ja: '価格ルールが見つかりません。',
+    en: 'Pricing rule not found.',
+  },
+  'pricing_rule.forbidden': {
+    ja: 'この価格ルールにアクセスする権限がありません。',
+    en: 'You do not have permission to access this pricing rule.',
+  },
+
+  // Group Booking messages
+  'group_booking_created': {
+    ja: 'グループ予約を作成しました。',
+    en: 'Group booking created successfully.',
+  },
+  'group_booking_updated': {
+    ja: 'グループ予約を更新しました。',
+    en: 'Group booking updated successfully.',
+  },
+  'group_booking_retrieved': {
+    ja: 'グループ予約情報を取得しました。',
+    en: 'Group booking information retrieved successfully.',
+  },
+  'group_bookings_retrieved': {
+    ja: 'グループ予約一覧を取得しました。',
+    en: 'Group bookings retrieved successfully.',
+  },
+  'group_booking_status_updated': {
+    ja: 'グループ予約のステータスを更新しました。',
+    en: 'Group booking status updated successfully.',
+  },
+  'participant_added': {
+    ja: '参加者を追加しました。',
+    en: 'Participant added successfully.',
+  },
+  'participant_removed': {
+    ja: '参加者を削除しました。',
+    en: 'Participant removed successfully.',
+  },
+  'participant_checked_in': {
+    ja: '参加者をチェックインしました。',
+    en: 'Participant checked in successfully.',
+  },
+  'participant_payment_recorded': {
+    ja: '参加者の支払いを記録しました。',
+    en: 'Participant payment recorded successfully.',
+  },
+  'group_booking.not_found': {
+    ja: 'グループ予約が見つかりません。',
+    en: 'Group booking not found.',
+  },
+  'group_booking.full': {
+    ja: 'グループ予約が満員です。',
+    en: 'Group booking is full.',
+  },
+  'group_booking.forbidden': {
+    ja: 'このグループ予約にアクセスする権限がありません。',
+    en: 'You do not have permission to access this group booking.',
+  },
+
+  // Membership messages
+  'membership_created': {
+    ja: 'メンバーシップを作成しました。',
+    en: 'Membership created successfully.',
+  },
+  'membership_updated': {
+    ja: 'メンバーシップを更新しました。',
+    en: 'Membership updated successfully.',
+  },
+  'membership_cancelled': {
+    ja: 'メンバーシップをキャンセルしました。',
+    en: 'Membership cancelled successfully.',
+  },
+  'membership_retrieved': {
+    ja: 'メンバーシップ情報を取得しました。',
+    en: 'Membership information retrieved successfully.',
+  },
+  'memberships_retrieved': {
+    ja: 'メンバーシップ一覧を取得しました。',
+    en: 'Memberships retrieved successfully.',
+  },
+  'punch_card_visit_used': {
+    ja: 'パンチカードの利用回数を使用しました。',
+    en: 'Punch card visit used successfully.',
+  },
+  'recurring_billing_processed': {
+    ja: '定期課金を処理しました。',
+    en: 'Recurring billing processed successfully.',
+  },
+  'active_membership_retrieved': {
+    ja: 'アクティブなメンバーシップを取得しました。',
+    en: 'Active membership retrieved successfully.',
+  },
+  'membership_status_checked': {
+    ja: 'メンバーシップのステータスを確認しました。',
+    en: 'Membership status checked successfully.',
+  },
+  'membership_discount_applied': {
+    ja: 'メンバーシップ割引を適用しました。',
+    en: 'Membership discount applied successfully.',
+  },
+  'membership.not_found': {
+    ja: 'メンバーシップが見つかりません。',
+    en: 'Membership not found.',
+  },
+  'membership.forbidden': {
+    ja: 'このメンバーシップにアクセスする権限がありません。',
+    en: 'You do not have permission to access this membership.',
+  },
+  'business_id_and_customer_id_required': {
+    ja: 'ビジネスIDと顧客IDが必要です。',
+    en: 'Business ID and Customer ID are required.',
+  },
+  'business_id_customer_id_and_price_required': {
+    ja: 'ビジネスID、顧客ID、価格が必要です。',
+    en: 'Business ID, Customer ID, and price are required.',
   },
 };
 

@@ -5,7 +5,7 @@
  */
 
 import { Request, Response, NextFunction } from 'express';
-import { redis } from '../config/redis';
+import { ensureRedis } from '../config/redis';
 import { RateLimit } from '../models/rateLimit.model';
 import { TooManyRequestsError } from '../utils/httpErrors';
 import { logger } from '../utils/logger';
@@ -53,13 +53,16 @@ export function rateLimit(options: RateLimitOptions) {
       
       // Try Redis first (faster)
       try {
-        await redis.connect();
+        // Ensure Redis is connected (will reuse existing connection if already connected)
+        const redisClient = await ensureRedis();
         const redisKey = `rate_limit:${key}:${windowStart}`;
-        const count = await redis.incr(redisKey);
         
+        // Use Redis INCR with atomic expiration check
+        const count = await redisClient.incr(redisKey);
+        
+        // Set expiration if this is the first request in the window
         if (count === 1) {
-          // Set expiration for the window
-          await redis.expire(redisKey, Math.ceil(options.windowMs / 1000));
+          await redisClient.expire(redisKey, Math.ceil(options.windowMs / 1000));
         }
         
         const remaining = Math.max(0, options.maxRequests - count);
@@ -82,12 +85,14 @@ export function rateLimit(options: RateLimitOptions) {
             'Rate limit exceeded'
           );
           
-          // Store in database for analytics
-          await RateLimit.create({
+          // Store in database for analytics (async, don't wait)
+          RateLimit.create({
             key: hashToken(key),
             count,
             window_start: new Date(windowStart),
             expires_at: new Date(windowEnd),
+          }).catch((err) => {
+            logger.error({ error: err }, 'Failed to store rate limit record');
           });
           
           return next(

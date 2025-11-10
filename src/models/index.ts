@@ -36,6 +36,16 @@ import { initNotificationOutbox, NotificationOutbox } from './notificationOutbox
 import { initAnalyticsDaily, AnalyticsDaily } from './analyticsDaily.model';
 import { initRateLimit, RateLimit } from './rateLimit.model';
 import { initFeatureFlag, FeatureFlag } from './featureFlag.model';
+import { initLineUser, LineUser } from './lineUser.model';
+import { initBookingQrCode, BookingQrCode } from './bookingQrCode.model';
+import { initPricingRule, PricingRule } from './pricingRule.model';
+import { initGroupBooking, GroupBooking } from './groupBooking.model';
+import { initGroupBookingParticipant, GroupBookingParticipant } from './groupBookingParticipant.model';
+import { initMembership, Membership } from './membership.model';
+import { initMembershipPayment, MembershipPayment } from './membershipPayment.model';
+import { initInvoice, Invoice } from './invoice.model';
+import { initCustomerTag, CustomerTag } from './customerTag.model';
+import { initCustomerSegment, CustomerSegment } from './customerSegment.model';
 
 // Initialize all models
 const models = {
@@ -74,6 +84,16 @@ const models = {
   AnalyticsDaily: initAnalyticsDaily(sequelize),
   RateLimit: initRateLimit(sequelize),
   FeatureFlag: initFeatureFlag(sequelize),
+  LineUser: initLineUser(sequelize),
+  BookingQrCode: initBookingQrCode(sequelize),
+  PricingRule: initPricingRule(sequelize),
+  GroupBooking: initGroupBooking(sequelize),
+  GroupBookingParticipant: initGroupBookingParticipant(sequelize),
+  Membership: initMembership(sequelize),
+  MembershipPayment: initMembershipPayment(sequelize),
+  Invoice: initInvoice(sequelize),
+  CustomerTag: initCustomerTag(sequelize),
+  CustomerSegment: initCustomerSegment(sequelize),
 };
 
 // Define associations
@@ -85,7 +105,8 @@ export function setupAssociations() {
     Service, Resource, ServiceResource, StaffWorkingHour, StaffException, StaffAssignment,
     CancellationPolicy, Customer, CustomerNote,
     Booking, BookingHistory, BookingReminder, Waitlist,
-    BookingPayment, Review, AuditLog, AnalyticsDaily
+    BookingPayment, BookingQrCode, Review, AuditLog, AnalyticsDaily,
+    LineUser
   } = models;
 
   // User associations
@@ -99,6 +120,8 @@ export function setupAssociations() {
   User.hasMany(Review, { foreignKey: 'moderated_by', as: 'moderatedReviews' });
   User.hasMany(Review, { foreignKey: 'responded_by', as: 'respondedReviews' });
   User.hasMany(AuditLog, { foreignKey: 'actor_user_id', as: 'auditLogs' });
+  User.hasOne(LineUser, { foreignKey: 'user_id', as: 'lineAccount' });
+  User.hasMany(BookingQrCode, { foreignKey: 'used_by', as: 'scannedQrCodes' });
 
   // Vertical associations
   Vertical.hasMany(Business, { foreignKey: 'vertical_id', as: 'businesses' });
@@ -121,6 +144,11 @@ export function setupAssociations() {
   Business.hasMany(Waitlist, { foreignKey: 'business_id', as: 'waitlist' });
   Business.hasMany(StaffAssignment, { foreignKey: 'business_id', as: 'staffAssignments' });
   Business.hasMany(AnalyticsDaily, { foreignKey: 'business_id', as: 'analytics' });
+  Business.hasMany(GroupBooking, { foreignKey: 'business_id', as: 'groupBookings' });
+  Business.hasMany(Membership, { foreignKey: 'business_id', as: 'memberships' });
+  Business.hasMany(Invoice, { foreignKey: 'business_id', as: 'invoices' });
+  Business.hasMany(CustomerTag, { foreignKey: 'business_id', as: 'customerTags' });
+  Business.hasMany(CustomerSegment, { foreignKey: 'business_id', as: 'customerSegments' });
 
   // BusinessSettings associations
   BusinessSettings.belongsTo(Business, { foreignKey: 'business_id', as: 'business' });
@@ -150,6 +178,8 @@ export function setupAssociations() {
   Service.belongsToMany(Resource, { through: ServiceResource, foreignKey: 'service_id', as: 'resources' });
   Service.hasMany(Booking, { foreignKey: 'service_id', as: 'bookings' });
   Service.hasMany(Waitlist, { foreignKey: 'service_id', as: 'waitlist' });
+  Service.hasMany(PricingRule, { foreignKey: 'service_id', as: 'pricingRules' });
+  Service.hasMany(GroupBooking, { foreignKey: 'service_id', as: 'groupBookings' });
 
   // Resource associations
   Resource.belongsTo(Business, { foreignKey: 'business_id', as: 'business' });
@@ -183,6 +213,11 @@ export function setupAssociations() {
   Customer.hasMany(Booking, { foreignKey: 'customer_id', as: 'bookings' });
   Customer.hasMany(Review, { foreignKey: 'customer_id', as: 'reviews' });
   Customer.hasMany(Waitlist, { foreignKey: 'customer_id', as: 'waitlist' });
+  Customer.hasMany(GroupBooking, { foreignKey: 'organizer_customer_id', as: 'organizedGroupBookings' });
+  Customer.hasMany(GroupBookingParticipant, { foreignKey: 'customer_id', as: 'groupBookingParticipants' });
+  Customer.hasMany(Membership, { foreignKey: 'customer_id', as: 'memberships' });
+  Customer.hasMany(Invoice, { foreignKey: 'customer_id', as: 'invoices' });
+  Customer.hasMany(CustomerTag, { foreignKey: 'customer_id', as: 'tags' });
 
   // CustomerNote associations
   CustomerNote.belongsTo(Customer, { foreignKey: 'customer_id', as: 'customer' });
@@ -196,7 +231,9 @@ export function setupAssociations() {
   Booking.hasMany(BookingHistory, { foreignKey: 'booking_id', as: 'history' });
   Booking.hasMany(BookingReminder, { foreignKey: 'booking_id', as: 'reminders' });
   Booking.hasMany(BookingPayment, { foreignKey: 'booking_id', as: 'payments' });
+  Booking.hasOne(BookingQrCode, { foreignKey: 'booking_id', as: 'qrCode' });
   Booking.hasOne(Review, { foreignKey: 'booking_id', as: 'review' });
+  Booking.hasMany(Invoice, { foreignKey: 'booking_id', as: 'invoices' });
 
   // BookingHistory associations
   BookingHistory.belongsTo(Booking, { foreignKey: 'booking_id', as: 'booking' });
@@ -225,6 +262,48 @@ export function setupAssociations() {
 
   // AuditLog associations
   AuditLog.belongsTo(User, { foreignKey: 'actor_user_id', as: 'actor' });
+
+  // LineUser associations
+  LineUser.belongsTo(User, { foreignKey: 'user_id', as: 'user' });
+
+  // BookingQrCode associations
+  BookingQrCode.belongsTo(Booking, { foreignKey: 'booking_id', as: 'booking' });
+  BookingQrCode.belongsTo(User, { foreignKey: 'used_by', as: 'scannedBy' });
+
+  // PricingRule associations
+  PricingRule.belongsTo(Service, { foreignKey: 'service_id', as: 'service' });
+
+  // GroupBooking associations
+  GroupBooking.belongsTo(Business, { foreignKey: 'business_id', as: 'business' });
+  GroupBooking.belongsTo(Service, { foreignKey: 'service_id', as: 'service' });
+  GroupBooking.belongsTo(Customer, { foreignKey: 'organizer_customer_id', as: 'organizer' });
+  GroupBooking.hasMany(GroupBookingParticipant, { foreignKey: 'group_booking_id', as: 'participants' });
+
+  // GroupBookingParticipant associations
+  GroupBookingParticipant.belongsTo(GroupBooking, { foreignKey: 'group_booking_id', as: 'groupBooking' });
+  GroupBookingParticipant.belongsTo(Customer, { foreignKey: 'customer_id', as: 'customer' });
+
+  // Membership associations
+  Membership.belongsTo(Business, { foreignKey: 'business_id', as: 'business' });
+  Membership.belongsTo(Customer, { foreignKey: 'customer_id', as: 'customer' });
+  Membership.hasMany(MembershipPayment, { foreignKey: 'membership_id', as: 'payments' });
+
+  // MembershipPayment associations
+  MembershipPayment.belongsTo(Membership, { foreignKey: 'membership_id', as: 'membership' });
+
+  // Invoice associations
+  Invoice.belongsTo(Business, { foreignKey: 'business_id', as: 'business' });
+  Invoice.belongsTo(Booking, { foreignKey: 'booking_id', as: 'booking' });
+  Invoice.belongsTo(Customer, { foreignKey: 'customer_id', as: 'customer' });
+
+  // CustomerTag associations
+  CustomerTag.belongsTo(Business, { foreignKey: 'business_id', as: 'business' });
+  CustomerTag.belongsTo(Customer, { foreignKey: 'customer_id', as: 'customer' });
+  CustomerTag.belongsTo(User, { foreignKey: 'created_by', as: 'creator' });
+
+  // CustomerSegment associations
+  CustomerSegment.belongsTo(Business, { foreignKey: 'business_id', as: 'business' });
+  CustomerSegment.belongsTo(User, { foreignKey: 'created_by', as: 'creator' });
 }
 
 // Initialize associations
@@ -270,4 +349,14 @@ export {
   AnalyticsDaily,
   RateLimit,
   FeatureFlag,
+  LineUser,
+  BookingQrCode,
+  PricingRule,
+  GroupBooking,
+  GroupBookingParticipant,
+  Membership,
+  MembershipPayment,
+  Invoice,
+  CustomerTag,
+  CustomerSegment,
 };

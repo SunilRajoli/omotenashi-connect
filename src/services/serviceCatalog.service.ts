@@ -61,6 +61,9 @@ export async function createService(
     buffer_before: data.buffer_before || 0,
     buffer_after: data.buffer_after || 0,
     policy_id: data.policy_id,
+    requires_deposit: false,
+    deposit_percentage: 0,
+    deposit_due_hours: 24,
     metadata: data.metadata || {},
     is_active: data.is_active !== false,
   });

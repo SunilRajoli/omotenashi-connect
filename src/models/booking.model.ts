@@ -3,6 +3,7 @@ import { DataTypes, Model, Sequelize, Optional } from 'sequelize';
 export enum BookingStatus {
   PENDING = 'pending',
   PENDING_PAYMENT = 'pending_payment',
+  PENDING_DEPOSIT = 'pending_deposit',
   CONFIRMED = 'confirmed',
   COMPLETED = 'completed',
   CANCELLED = 'cancelled',

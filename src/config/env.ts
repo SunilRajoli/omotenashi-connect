@@ -53,4 +53,11 @@ export const env = {
   FROM_EMAIL: process.env.FROM_EMAIL || 'noreply@omotenashi-connect.com',
   FROM_NAME: process.env.FROM_NAME || 'Omotenashi Connect',
   APP_URL: process.env.APP_URL || 'http://localhost:4000',
+
+  // LINE Integration
+  LINE_CHANNEL_ID: process.env.LINE_CHANNEL_ID || '',
+  LINE_CHANNEL_SECRET: process.env.LINE_CHANNEL_SECRET || '',
+  LINE_CHANNEL_ACCESS_TOKEN: process.env.LINE_CHANNEL_ACCESS_TOKEN || '',
+  LINE_LIFF_ID: process.env.LINE_LIFF_ID || '',
+  LINE_WEBHOOK_SECRET: process.env.LINE_WEBHOOK_SECRET || '',
 };

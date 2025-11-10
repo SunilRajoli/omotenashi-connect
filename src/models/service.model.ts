@@ -10,6 +10,9 @@ interface ServiceAttributes {
   description_ja?: string;
   duration_minutes?: number;
   price_cents?: number;
+  requires_deposit: boolean;
+  deposit_percentage: number;
+  deposit_due_hours: number;
   buffer_before: number;
   buffer_after: number;
   policy_id?: string;
@@ -32,6 +35,9 @@ export class Service extends Model<ServiceAttributes, ServiceCreationAttributes>
   declare description_ja?: string;
   declare duration_minutes?: number;
   declare price_cents?: number;
+  declare requires_deposit: boolean;
+  declare deposit_percentage: number;
+  declare deposit_due_hours: number;
   declare buffer_before: number;
   declare buffer_after: number;
   declare policy_id?: string;
@@ -83,6 +89,28 @@ export function initService(sequelize: Sequelize): typeof Service {
       price_cents: {
         type: DataTypes.INTEGER,
         allowNull: true,
+      },
+      requires_deposit: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
+      deposit_percentage: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 0,
+        validate: {
+          min: 0,
+          max: 100,
+        },
+      },
+      deposit_due_hours: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 24,
+        validate: {
+          min: 0,
+        },
       },
       buffer_before: {
         type: DataTypes.INTEGER,

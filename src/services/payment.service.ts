@@ -264,6 +264,8 @@ export async function createPaymentIntent(
         amount_cents: data.amount_cents,
         currency: data.currency,
         mode: data.mode,
+        payment_type: 'full',
+        is_deposit: false,
         status: PaymentStatus.PENDING,
         raw_response: { paymentIntentId, clientSecret },
       },

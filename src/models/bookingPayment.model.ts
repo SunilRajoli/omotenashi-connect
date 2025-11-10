@@ -2,6 +2,7 @@ import { DataTypes, Model, Sequelize, Optional } from 'sequelize';
 
 export enum PaymentMode {
   DEPOSIT = 'deposit',
+  BALANCE = 'balance',
   FULL = 'full',
   HOLD = 'hold',
   PAY_ON_ARRIVAL = 'pay_on_arrival',
@@ -23,6 +24,8 @@ interface BookingPaymentAttributes {
   amount_cents: number;
   currency: string;
   mode: PaymentMode;
+  payment_type: 'deposit' | 'balance' | 'full';
+  is_deposit: boolean;
   status: PaymentStatus;
   raw_response?: Record<string, unknown>;
   created_at: Date;
@@ -40,6 +43,8 @@ export class BookingPayment extends Model<BookingPaymentAttributes, BookingPayme
   declare amount_cents: number;
   declare currency: string;
   declare mode: PaymentMode;
+  declare payment_type: 'deposit' | 'balance' | 'full';
+  declare is_deposit: boolean;
   declare status: PaymentStatus;
   declare raw_response?: Record<string, unknown>;
   declare readonly created_at: Date;
@@ -84,6 +89,16 @@ export function initBookingPayment(sequelize: Sequelize): typeof BookingPayment 
       mode: {
         type: DataTypes.ENUM(...Object.values(PaymentMode)),
         allowNull: false,
+      },
+      payment_type: {
+        type: DataTypes.ENUM('deposit', 'balance', 'full'),
+        allowNull: false,
+        defaultValue: 'full',
+      },
+      is_deposit: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
       },
       status: {
         type: DataTypes.ENUM(...Object.values(PaymentStatus)),

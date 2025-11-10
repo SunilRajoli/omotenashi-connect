@@ -25,6 +25,10 @@ import { CreateBookingRequest, UpdateBookingRequest, BookingQueryParams } from '
 import { isTimeSlotAvailable, getAvailableResources } from './availability.service';
 import { sendBookingConfirmation } from './email.service';
 import { Locale } from '../types/enums';
+import { calculatePriceWithRules } from './pricing.service';
+import { generateBookingQrCode } from './qrcode.service';
+import { calculateDepositAmount } from './deposit.service';
+import { sendBookingConfirmationMessage, getLineUserByUserId } from './line.service';
 
 /**
  * Create a new booking
@@ -167,13 +171,45 @@ export async function createBooking(
       }
     }
 
+    // Calculate price with pricing rules
+    let finalPriceCents = 0;
+    let basePriceCents = 0;
+    let appliedPricingRules: Array<{
+      ruleId: string;
+      ruleName: string;
+      modifier: number;
+      modifierType: string;
+    }> = [];
+
+    if (service && service.price_cents) {
+      basePriceCents = service.price_cents;
+      const pricingResult = await calculatePriceWithRules(
+        service.id,
+        service.price_cents,
+        startAt,
+        startAt
+      );
+      finalPriceCents = pricingResult.finalPrice;
+      appliedPricingRules = pricingResult.appliedRules;
+    }
+
+    // Calculate deposit if required
+    let depositAmountCents = 0;
+    if (service && service.requires_deposit && finalPriceCents > 0) {
+      depositAmountCents = calculateDepositAmount(service, finalPriceCents);
+    }
+
     // Calculate price snapshot
     const priceSnapshot: Record<string, unknown> = {};
     if (service) {
       priceSnapshot.service_id = service.id;
       priceSnapshot.service_name_ja = service.name_ja;
       priceSnapshot.service_name_en = service.name_en;
-      priceSnapshot.price_cents = service.price_cents || 0;
+      priceSnapshot.base_price_cents = basePriceCents;
+      priceSnapshot.final_price_cents = finalPriceCents;
+      priceSnapshot.applied_pricing_rules = appliedPricingRules;
+      priceSnapshot.deposit_amount_cents = depositAmountCents;
+      priceSnapshot.balance_amount_cents = finalPriceCents - depositAmountCents;
       priceSnapshot.duration_minutes = service.duration_minutes || 60;
     }
 
@@ -193,10 +229,14 @@ export async function createBooking(
       }
     }
 
-    // Determine initial status
+    // Determine initial status based on pricing and deposit
     let initialStatus = BookingStatus.PENDING;
-    if (service?.price_cents && service.price_cents > 0) {
-      initialStatus = BookingStatus.PENDING_PAYMENT;
+    if (finalPriceCents > 0) {
+      if (depositAmountCents > 0) {
+        initialStatus = BookingStatus.PENDING_DEPOSIT;
+      } else {
+        initialStatus = BookingStatus.PENDING_PAYMENT;
+      }
     } else {
       initialStatus = BookingStatus.CONFIRMED;
     }
@@ -218,6 +258,15 @@ export async function createBooking(
       },
       { transaction }
     );
+
+    // Generate QR code for booking
+    try {
+      await generateBookingQrCode(booking.id);
+      logger.info({ bookingId: booking.id }, 'QR code generated for booking');
+    } catch (error) {
+      logger.error({ bookingId: booking.id, error }, 'Failed to generate QR code for booking');
+      // Don't fail booking creation if QR code generation fails
+    }
 
     // Create booking history entry
     await BookingHistory.create(
@@ -262,8 +311,8 @@ export async function createBooking(
       }
     }
 
-    // Send confirmation email if customer has email
-    if (customer?.email && initialStatus === BookingStatus.CONFIRMED) {
+    // Send confirmation notifications if customer exists
+    if (customer && initialStatus === BookingStatus.CONFIRMED) {
       try {
         const settings = await BusinessSettings.findOne({
           where: { business_id: data.business_id },
@@ -271,44 +320,66 @@ export async function createBooking(
         });
         const locale = (settings?.default_locale as Locale) || Locale.JA;
 
-        const businessName = business.display_name_ja || business.display_name_en || business.slug;
-        const serviceName = service ? (service.name_ja || service.name_en) : 'Service';
-        const customerName = customer.name || customer.email || 'Customer';
+        // Send email confirmation
+        if (customer.email) {
+          try {
+            const businessName = business.display_name_ja || business.display_name_en || business.slug;
+            const serviceName = service ? (service.name_ja || service.name_en) : 'Service';
+            const customerName = customer.name || customer.email || 'Customer';
 
-        // Format date and time
-        const bookingDate = startAt.toLocaleDateString(locale === Locale.JA ? 'ja-JP' : 'en-US', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-        });
-        const bookingTime = startAt.toLocaleTimeString(locale === Locale.JA ? 'ja-JP' : 'en-US', {
-          hour: '2-digit',
-          minute: '2-digit',
-        });
+            // Format date and time
+            const bookingDate = startAt.toLocaleDateString(locale === Locale.JA ? 'ja-JP' : 'en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            });
+            const bookingTime = startAt.toLocaleTimeString(locale === Locale.JA ? 'ja-JP' : 'en-US', {
+              hour: '2-digit',
+              minute: '2-digit',
+            });
 
-        // Format address
-        const addressParts = [
-          business.postal_code,
-          business.prefecture,
-          business.city,
-          business.street,
-          business.building,
-        ].filter(Boolean);
-        const businessAddress = addressParts.join(' ');
+            // Format address
+            const addressParts = [
+              business.postal_code,
+              business.prefecture,
+              business.city,
+              business.street,
+              business.building,
+            ].filter(Boolean);
+            const businessAddress = addressParts.join(' ');
 
-        await sendBookingConfirmation(customer.email, locale, {
-          customerName,
-          businessName,
-          serviceName,
-          bookingDate,
-          bookingTime,
-          bookingId: booking.id,
-          businessAddress,
-          businessPhone: business.phone || undefined,
-        });
+            await sendBookingConfirmation(customer.email, locale, {
+              customerName,
+              businessName,
+              serviceName,
+              bookingDate,
+              bookingTime,
+              bookingId: booking.id,
+              businessAddress,
+              businessPhone: business.phone || undefined,
+            });
+            logger.info({ bookingId: booking.id }, 'Booking confirmation email sent');
+          } catch (error) {
+            logger.error({ bookingId: booking.id, error }, 'Failed to send booking confirmation email');
+          }
+        }
+
+        // Send LINE confirmation if user has LINE account
+        if (userId) {
+          try {
+            const lineUser = await getLineUserByUserId(userId);
+            if (lineUser && lineUser.line_user_id) {
+              await sendBookingConfirmationMessage(userId, booking.id, locale);
+              logger.info({ bookingId: booking.id, userId }, 'Booking confirmation LINE message sent');
+            }
+          } catch (error) {
+            logger.error({ bookingId: booking.id, userId, error }, 'Failed to send booking confirmation LINE message');
+            // Don't fail if LINE message fails
+          }
+        }
       } catch (error) {
-        // Log error but don't fail booking creation
-        logger.error({ error, bookingId: booking.id }, 'Failed to send booking confirmation email');
+        logger.error({ bookingId: booking.id, error }, 'Failed to send booking confirmation notifications');
+        // Don't fail booking creation if notifications fail
       }
     }
 
@@ -584,8 +655,9 @@ export async function updateBooking(
     if (data.status && data.status !== booking.status) {
       // Validate status transition
       const validTransitions: Record<BookingStatus, BookingStatus[]> = {
-        [BookingStatus.PENDING]: [BookingStatus.PENDING_PAYMENT, BookingStatus.CONFIRMED, BookingStatus.CANCELLED],
+        [BookingStatus.PENDING]: [BookingStatus.PENDING_PAYMENT, BookingStatus.PENDING_DEPOSIT, BookingStatus.CONFIRMED, BookingStatus.CANCELLED],
         [BookingStatus.PENDING_PAYMENT]: [BookingStatus.CONFIRMED, BookingStatus.CANCELLED],
+        [BookingStatus.PENDING_DEPOSIT]: [BookingStatus.PENDING_PAYMENT, BookingStatus.CONFIRMED, BookingStatus.CANCELLED],
         [BookingStatus.CONFIRMED]: [BookingStatus.COMPLETED, BookingStatus.CANCELLED, BookingStatus.NO_SHOW],
         [BookingStatus.COMPLETED]: [],
         [BookingStatus.CANCELLED]: [],
@@ -708,7 +780,7 @@ export async function cancelBooking(
 
     logger.info({ bookingId, userId, reason }, 'Booking cancelled');
 
-    return booking.reload({
+    const reloadedBooking = await booking.reload({
       include: [
         { model: Business, as: 'business' },
         { model: Service, as: 'service' },
@@ -717,6 +789,47 @@ export async function cancelBooking(
       ],
       transaction,
     });
+
+    // Check for waitlist entries and notify the next one
+    try {
+      const { getNextWaitlistEntry, notifyWaitlistEntry } = await import('./waitlist.service');
+      const { Locale } = await import('../types/enums');
+
+      // Get the next waitlist entry for this service and date
+      const waitlistEntry = await getNextWaitlistEntry(
+        booking.business_id,
+        booking.service_id || undefined,
+        booking.start_at ? new Date(booking.start_at) : undefined
+      );
+
+      if (waitlistEntry) {
+        // Notify the waitlist entry about the available slot
+        const startAt = new Date(booking.start_at);
+        const endAt = new Date(booking.end_at);
+        const timeStart = startAt.toTimeString().slice(0, 5); // HH:MM
+        const timeEnd = endAt.toTimeString().slice(0, 5); // HH:MM
+
+        await notifyWaitlistEntry(
+          waitlistEntry.id,
+          {
+            date: startAt,
+            time_start: timeStart,
+            time_end: timeEnd,
+          },
+          Locale.JA
+        );
+
+        logger.info(
+          { bookingId, waitlistId: waitlistEntry.id },
+          'Notified waitlist entry about cancelled booking'
+        );
+      }
+    } catch (error) {
+      // Log error but don't fail the cancellation
+      logger.error({ bookingId, error }, 'Failed to notify waitlist entry');
+    }
+
+    return reloadedBooking;
   });
 }
 
